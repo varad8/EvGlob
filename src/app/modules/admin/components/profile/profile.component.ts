@@ -57,10 +57,13 @@ export class ProfileComponent {
     ];
   }
 
+  //format date to show on input
   formatTime(time: { hours: number; minutes: number }): string {
-    const hours = time.hours % 12 || 12;
-    const minutes = time.minutes < 10 ? '0' + time.minutes : time.minutes;
-    const period = time.hours < 12 ? 'AM' : 'PM';
-    return `${hours}:${minutes} ${period}`;
+    // Format hours and minutes to ensure they have leading zeros if necessary
+    const formattedHours = ('0' + time.hours).slice(-2); // Ensure 2 digits
+    const formattedMinutes = ('0' + time.minutes).slice(-2); // Ensure 2 digits
+
+    // Return the time string in 'HH:mm' format
+    return `${formattedHours}:${formattedMinutes}`;
   }
 }

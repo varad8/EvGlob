@@ -24,14 +24,14 @@
                 <div class="mt-5 grid md:grid-cols-2 md:gap-6">
                     <div class="relative z-0 w-full mb-5 group">
                         <input type="text" [(ngModel)]="evAdminProfile.profile.firstname" class="floating-input peer"
-                            disabled name="firstname" id="firstname" />
+                            readonly name="firstname" id="firstname" />
                         <label for="firstname"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">First
                             Name</label>
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.profile.lastname" type="text" class="floating-input peer"
-                            placeholder=" " disabled name="lastname" id="lastname" />
+                            placeholder=" " readonly name="lastname" id="lastname" />
                         <label for="lastname"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Last
                             Name</label>
@@ -42,13 +42,13 @@
                 <div class="mt-5 grid md:grid-cols-2 md:gap-6">
                     <div class="relative z-0 w-full mb-5 group">
                         <input type="email" [(ngModel)]="evAdminProfile.profile.email" class="floating-input peer"
-                            disabled name="email" id="email" />
+                            readonly name="email" id="email" />
                         <label for="email"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Email</label>
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.profile.mobile" type="tel" class="floating-input peer"
-                            placeholder=" " disabled name="mobile" id="mobile" />
+                            placeholder=" " readonly name="mobile" id="mobile" />
                         <label for="mobile"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Mobile
                             No</label>
@@ -58,7 +58,7 @@
                 <!-- For DOB/Date of Joining / userid -->
                 <div class="mt-5 grid gap-2 grid-cols-3 md:gap-6">
                     <div class="relative z-0 w-full mb-5 group">
-                        <input type="text" [(ngModel)]="evAdminProfile.profile.dob" class="floating-input peer" disabled
+                        <input type="text" [(ngModel)]="evAdminProfile.profile.dob" class="floating-input peer" readonly
                             name="dob" id="dob" />
                         <label for="dob"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Date
@@ -66,7 +66,7 @@
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.profile.dateofjoining" type="text"
-                            class="floating-input peer" placeholder=" " disabled name="dateofjoining"
+                            class="floating-input peer" placeholder=" " readonly name="dateofjoining"
                             id="dateofjoining" />
                         <label for="dateofjoining"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Date
@@ -75,7 +75,7 @@
 
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.userid" type="text" class="floating-input peer"
-                            placeholder=" " disabled name="userid" id="userid" />
+                            placeholder=" " readonly name="userid" id="userid" />
                         <label for="userid"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">UID</label>
                     </div>
@@ -84,7 +84,7 @@
                 <!-- Account Type and updated at last status -->
                 <div class="mt-5 grid gap-2 grid-cols-2 md:gap-6">
                     <div class="relative z-0 w-full mb-5 group">
-                        <input type="text" [(ngModel)]="evAdminProfile.accountType" class="floating-input peer" disabled
+                        <input type="text" [(ngModel)]="evAdminProfile.accountType" class="floating-input peer" readonly
                             name="accountType" id="accountType" />
                         <label for="accountType"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Account
@@ -92,7 +92,7 @@
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.updatedAt" type="text" class="floating-input peer"
-                            placeholder=" " disabled name="updatedAt" id="updatedAt" />
+                            placeholder=" " readonly name="updatedAt" id="updatedAt" />
                         <label for="updatedAt"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Last
                             Updated</label>
@@ -116,14 +116,14 @@
                 <div class="mt-5 grid gap-2 grid-cols-3 md:gap-6">
                     <div class="relative z-0 w-full mb-5 group">
                         <input type="text" [(ngModel)]="evAdminProfile.accountStatus.approvedBy"
-                            class="floating-input peer" disabled name="approvedBy" id="approvedBy" />
+                            class="floating-input peer" readonly name="approvedBy" id="approvedBy" />
                         <label for="approvedBy"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Approved
                             By</label>
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.accountStatus.updatedAt" type="text"
-                            class="floating-input peer" disabled name="accountStatusUpdatedAt"
+                            class="floating-input peer" readonly name="accountStatusUpdatedAt"
                             id="accountStatusUpdatedAt" />
                         <label for="accountStatusUpdatedAt"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Account
@@ -131,21 +131,21 @@
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.accountStatus.adminID" type="text"
-                            class="floating-input peer" disabled name="adminID" id="adminID" />
+                            class="floating-input peer" readonly name="adminID" id="adminID" />
                         <label for="adminID"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Admin
                             ID</label>
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.accountStatus.status" type="text" class="floating-input peer"
-                            disabled name="accountStatus" id="accountStatus" />
+                            readonly name="accountStatus" id="accountStatus" />
                         <label for="accountStatus"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Account
                             Status</label>
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.accountStatus.remark" type="text" class="floating-input peer"
-                            disabled name="remark" id="remark" />
+                            readonly name="remark" id="remark" />
                         <label for="remark"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Remark</label>
                     </div>
@@ -177,7 +177,7 @@
                 <!-- For EvTitle -->
                 <div class="relative z-0 w-full mb-5 group">
                     <input [(ngModel)]="evAdminProfile.title" type="text" class="floating-input peer" placeholder=" "
-                        disabled name="title" id="title" />
+                        readonly name="title" id="title" />
                     <label for="title"
                         class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Ev
                         Title</label>
@@ -189,14 +189,48 @@
                         Ev Description
                     </label>
                     <textarea rows="6" name="description" [(ngModel)]="evAdminProfile.description"
-                        class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark"
-                        disabled></textarea>
+                        class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition readonly:cursor-default readonly:bg-whiter dark:border-form-strokedark"
+                        readonly></textarea>
                 </div>
+
+
+                <!-- Ev Location and coordinates -->
+                <div class="mt-5 grid gap-2 grid-cols-2 md:gap-6">
+                    <div>
+                        <label for="cities" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Seleted
+                            City</label>
+                        <div class="flex gap-2">
+                            <input type="text" [(ngModel)]="evAdminProfile.location.city" placeholder="City" readonly
+                                class="w-full shadow-1 rounded-lg border-[1.5px] bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 readonly:cursor-default">
+                            <input type="text" [(ngModel)]="evAdminProfile.location.state" placeholder="State" readonly
+                                class="w-full shadow-1 rounded-lg border-[1.5px] bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 readonly:cursor-default">
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <label for="coordinates"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Coordinates
+                            (Lat./Long.)</label>
+                        <div class="flex gap-2">
+                            <input type="text" [(ngModel)]="evAdminProfile.coordinates.latitude" name="longitude"
+                                id="longitude"
+                                class="w-full shadow-1 rounded-lg border-[1.5px]  bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 readonly:cursor-default"
+                                readonly>
+
+                            <input type="text" [(ngModel)]="evAdminProfile.coordinates.longitude" name="longitude"
+                                id="longitude"
+                                class="w-full shadow-1 rounded-lg border-[1.5px]  bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 readonly:cursor-default"
+                                readonly>
+                        </div>
+                    </div>
+                </div>
+
 
                 <!-- For EvId /id / rate -->
                 <div class="mt-5 grid gap-2 grid-cols-3 md:gap-6">
                     <div class="relative z-0 w-full mb-5 group">
-                        <input type="text" [(ngModel)]="evAdminProfile.evid" class="floating-input peer" disabled
+                        <input type="text" [(ngModel)]="evAdminProfile.evid" class="floating-input peer" readonly
                             name="evid" id="evid" />
                         <label for="evid"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Ev
@@ -204,14 +238,14 @@
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.id" type="text" class="floating-input peer" placeholder=" "
-                            disabled name="id" id="id" />
+                            readonly name="id" id="id" />
                         <label for="id"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">ID</label>
                     </div>
 
                     <div class="relative z-0 w-full mb-5 group">
                         <input [(ngModel)]="evAdminProfile.rate" type="text" class="floating-input peer" placeholder=" "
-                            disabled name="rate" id="rate" />
+                            readonly name="rate" id="rate" />
                         <label for="rate"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Ev
                             Rate</label>
@@ -219,29 +253,31 @@
                 </div>
 
                 <!-- Also that as object evTimings -->
-                <div class="mt-5">
-                    <h4 class="font-medium text-gray-500 dark:text-gray-400 mb-3">Ev Timings</h4>
-                    <div *ngIf="evAdminProfile?.evTimings">
-                        <div *ngFor="let day of getDayOfWeek()">
-                            <div>
-                                <h4 class="text-[18px] text-gray-700">{{ day }}</h4>
-                                <div class="flex gap-3 text-gray-500">
-                                    <label for="{{ day }}OpeningTime" class="text-[15px]">Opening Time:</label>
-                                    <!-- Display formatted opening time -->
-                                    <input type="text" id="{{ day }}OpeningTime"
-                                        [value]="formatTime(evAdminProfile.evTimings[day].openingTime)"
-                                        class="bg-transparent dark:text-slate-300" disabled />
 
-                                    <label for="{{ day }}ClosingTime" class="text-[15px]">Closing Time:</label>
-                                    <!-- Display formatted closing time -->
-                                    <input type="text" id="{{ day }}ClosingTime"
-                                        class="bg-transparent dark:text-slate-300"
-                                        [value]="formatTime(evAdminProfile.evTimings[day].closingTime)" disabled />
-                                </div>
+                <div *ngFor="let day of getDayOfWeek()">
+                    <div class="mt-3">
+                        <h4 class="text-[18px] text-gray-900 dark:text-gray-300">{{ day }}</h4>
+                        <div class="mt-2 grid gap-3 grid-cols-2 md:gap-5">
+                            <div>
+                                <label for="{{ day }}OpeningTime" class="text-[15px] dark:text-gray-400">Opening
+                                    Time:</label>
+                                <!-- Input field for opening time -->
+                                <input type="time" id="{{ day }}OpeningTime" name="{{ day }}OpeningTime"
+                                    [value]="formatTime(evAdminProfile.evTimings[day].openingTime)" readonly
+                                    class="w-full shadow-1 rounded-md border-[1.5px] font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default px-3 py-2" />
                             </div>
-                            <br>
+
+                            <div>
+                                <label for="{{ day }}ClosingTime" class="text-[15px] dark:text-gray-400">Closing
+                                    Time:</label>
+                                <!-- Input field for closing time -->
+                                <input type="time" id="{{ day }}ClosingTime" name="{{ day }}ClosingTime" readonly
+                                    [value]="formatTime(evAdminProfile.evTimings[day].closingTime)"
+                                    class="w-full shadow-1 rounded-md border-[1.5px] font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default px-3 py-2" />
+                            </div>
                         </div>
                     </div>
+                    <br>
                 </div>
 
             </div>
