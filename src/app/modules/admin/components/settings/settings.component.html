@@ -270,14 +270,48 @@
                         <label class="mb-3 block font-medium text-sm text-black dark:text-white">
                             Ev Description
                         </label>
-                        <textarea rows="6" name="description" [(ngModel)]="evAdminProfile.description" class="w-full shadow-1 rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none
-                                        transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default
-                                        "></textarea>
+                        <textarea rows="6" name="description" [(ngModel)]="evAdminProfile.description"
+                            class="w-full shadow-1 rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default"></textarea>
                     </div>
 
 
+                    <!-- Ev Location and coordinates -->
+                    <div class="mt-5 grid gap-2 grid-cols-2 md:gap-6">
+                        <div>
+                            <label for="cities"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select a
+                                city</label>
+                            <div class="flex gap-2">
+                                <select id="cities" (change)="onCityChange($event)"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                    <option [value]="selectedCityName || undefined" disabled selected>
+                                        {{ selectedCityName ? selectedCityName : 'Choose your city' }}
+                                    </option>
+                                    <option *ngFor="let city of citiesapiData" [value]="city.name">{{ city.name }}
+                                    </option>
+                                </select>
+                                <input type="text" [(ngModel)]="selectedCityState" [value]="selectedCityState"
+                                    placeholder="State" readonly
+                                    class="w-full shadow-1 rounded-lg border-[1.5px] bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default">
+                            </div>
+                        </div>
 
 
+                        <div>
+                            <label for="coordinates"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Coordinates
+                                (Lat./Long.)</label>
+                            <div class="flex gap-2">
+                                <input type="text" [(ngModel)]="evAdminProfile.coordinates.latitude" name="longitude"
+                                    id="longitude"
+                                    class="w-full shadow-1 rounded-lg border-[1.5px]  bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default">
+
+                                <input type="text" [(ngModel)]="evAdminProfile.coordinates.longitude" name="longitude"
+                                    id="longitude"
+                                    class="w-full shadow-1 rounded-lg border-[1.5px]  bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default">
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- For EvId /id / rate -->
                     <div class="mt-5 grid gap-2 grid-cols-3 md:gap-6">
@@ -337,6 +371,7 @@
                         </div>
                         <br>
                     </div>
+
 
 
 

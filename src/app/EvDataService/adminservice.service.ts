@@ -158,13 +158,15 @@ export class AdminserviceService {
     }
   }
 
-  //update evTimings /rate /title/description
+  //update evTimings /rate /title/description/location/coordinates
   async updateEVAdminDetails(
     userId: string,
     evTimings: Partial<EvAdminProfile['evTimings']>,
     rate: number,
     title: string,
-    description: string
+    description: string,
+    location: any,
+    coordinates: any
   ): Promise<void> {
     try {
       const profileRef = this.afs.collection('/Evstation', (ref) =>
@@ -184,6 +186,8 @@ export class AdminserviceService {
             rate: rate,
             title: title,
             description: description,
+            location: location,
+            coordinates: coordinates,
             updatedAt: new Date().toISOString(), // Add current timestamp
           };
 

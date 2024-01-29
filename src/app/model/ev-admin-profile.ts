@@ -5,7 +5,8 @@ export interface EvAdminProfile {
   id: string;
   title: string;
   description: string;
-  location: string;
+  location: { city: string; state: string };
+  coordinates: { latitude: string; longitude: string };
   address: string;
   rate: number;
   evTimings: {

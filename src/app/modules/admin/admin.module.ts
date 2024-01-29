@@ -10,6 +10,7 @@ import { AnalyticsComponent } from './components/analytics/analytics.component';
 import { BookingComponent } from './components/booking/booking.component';
 import { PaymentsComponent } from './components/payments/payments.component';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,6 @@ import { FormsModule } from '@angular/forms';
     BookingComponent,
     PaymentsComponent,
   ],
-  imports: [CommonModule, AdminRoutingModule, FormsModule],
+  imports: [CommonModule, AdminRoutingModule, FormsModule, HttpClientModule],
 })
 export class AdminModule {}

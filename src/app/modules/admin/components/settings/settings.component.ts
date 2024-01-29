@@ -4,6 +4,7 @@ import { AdminserviceService } from '../../../../EvDataService/adminservice.serv
 import { AuthService } from '../../../../shared/auth.service';
 import { AngularFireUploadTask } from '@angular/fire/compat/storage';
 import { Time } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 type DayOfWeek =
   | 'Monday'
@@ -24,10 +25,32 @@ export class SettingsComponent {
   selectedEvFile: File | null = null;
   previewImage: string | null = null;
   evpreviewImage: string | null = null;
+  citiesapiData: any;
+
+  selectedCityName: string = '';
+  selectedCityState: string = '';
+
+  onCityChange(event: any): void {
+    this.selectedCityName = event.target.value;
+    this.selectedCityState = this.getState(this.selectedCityName);
+
+    this.evAdminProfile!.location = {
+      city: this.selectedCityName,
+      state: this.selectedCityState,
+    };
+  }
+
+  getState(cityName: string): string {
+    const selectedCity = this.citiesapiData.find(
+      (city: any) => city.name === cityName
+    );
+    return selectedCity ? selectedCity.state : '';
+  }
 
   constructor(
     private auth: AuthService,
-    private adminService: AdminserviceService
+    private adminService: AdminserviceService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -41,6 +64,13 @@ export class SettingsComponent {
           if (profile) {
             this.evAdminProfile = profile;
             console.log(this.evAdminProfile);
+            if (this.evAdminProfile?.location?.city) {
+              this.selectedCityName = this.evAdminProfile.location.city;
+              this.selectedCityState = this.getState(this.selectedCityName);
+
+              console.log('City:', this.selectedCityName);
+              this.onCityChange({ target: { value: this.selectedCityName } });
+            }
           } else {
             console.error('User not found or not logged in');
           }
@@ -50,6 +80,22 @@ export class SettingsComponent {
     } else {
       console.error('User not logged in');
     }
+
+    // Make an HTTP GET request to the API
+    this.http
+      .get('https://mocki.io/v1/79c1cf35-6327-4ffc-9e38-16e5a9fba095')
+      .subscribe(
+        (data: any) => {
+          // Assign the received data to the variable
+          this.citiesapiData = data;
+
+          // You can now use this.apiData in your component template or perform any other actions with the data
+          console.log(data);
+        },
+        (error) => {
+          console.error('Error fetching data:', error);
+        }
+      );
   }
 
   getDayOfWeek(): DayOfWeek[] {
@@ -230,7 +276,7 @@ export class SettingsComponent {
     }
   }
 
-  //Update Evdetails timing / rate /description / title
+  //Update Evdetails timing / rate /description / title /coordinates
 
   saveEvDetails() {
     const userId = this.evAdminProfile!.userid;
@@ -238,6 +284,8 @@ export class SettingsComponent {
     const updatedRate = this.evAdminProfile!.rate; // Update rate
     const updatedTitle = this.evAdminProfile!.title; // Update title
     const updatedDescription = this.evAdminProfile!.description; // Update description
+    const updateLocattion = this.evAdminProfile!.location; //update locatiopn
+    const updateCoordinates = this.evAdminProfile!.coordinates; //update coordinates
 
     // Call the service method to update the fields
     this.adminService
@@ -246,7 +294,9 @@ export class SettingsComponent {
         updatedEvTimings,
         updatedRate,
         updatedTitle,
-        updatedDescription
+        updatedDescription,
+        updateLocattion,
+        updateCoordinates
       )
       .then(() => {
         alert('Details updated successfully.');

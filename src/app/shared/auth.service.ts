@@ -94,7 +94,8 @@ export class AuthService {
           evid: '',
           title: '',
           description: '',
-          location: '',
+          location: { city: '', state: '' },
+          coordinates: { latitude: '', longitude: '' },
           address: '',
           rate: 0,
           evTimings: {
