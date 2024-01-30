@@ -33,6 +33,7 @@ module.exports = {
       backgroundImage: {
         "hero-bg": "url('./assets/hero-bg.png')",
         "footer-bg": "url('./assets/footerimg.jpg')",
+        userlog: "url('./assets/evcaruserlogin.jpg')",
       },
       dropShadow: {
         "lg-green":

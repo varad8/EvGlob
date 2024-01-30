@@ -21,6 +21,8 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../environments/environment.development';
 import { NgxWebstorageModule } from 'ngx-webstorage';
+import { EvdetailspageComponent } from './components/evdetailspage/evdetailspage.component';
+import { GoogleMapsModule } from '@angular/google-maps';
 
 @NgModule({
   declarations: [
@@ -39,6 +41,7 @@ import { NgxWebstorageModule } from 'ngx-webstorage';
     EvadminloginComponent,
     EvadminregisterComponent,
     AdminloginComponent,
+    EvdetailspageComponent,
   ],
   imports: [
     NgxWebstorageModule.forRoot(),
@@ -46,6 +49,7 @@ import { NgxWebstorageModule } from 'ngx-webstorage';
     AppRoutingModule,
     FormsModule,
     AngularFireModule.initializeApp(environment.firebase),
+    GoogleMapsModule,
   ],
 
   providers: [],

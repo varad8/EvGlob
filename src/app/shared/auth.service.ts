@@ -7,6 +7,7 @@ import { LocalStorageService, SessionStorageService } from 'ngx-webstorage';
 import { Time } from '@angular/common';
 import { Observable, map } from 'rxjs';
 import { AdminProfileModel } from '../model/admin-profile-model';
+import { UserProfile } from '../model/user-profile';
 
 @Injectable({
   providedIn: 'root',
@@ -420,4 +421,168 @@ export class AuthService {
     });
   }
   /*******************************************************[End Super Admin]***********************************************************/
+
+  /*******************************************************[Start User]***********************************************************/
+
+  //Register method for evregister
+  userregister(email: string, password: string) {
+    this.fireauth.createUserWithEmailAndPassword(email, password).then(
+      (authResult) => {
+        // Create a new EvAdminProfile instance
+        const uid = authResult.user?.uid || '';
+
+        const userProfile: UserProfile = {
+          email: email,
+          firstname: '',
+          lastname: '',
+          mobile: '',
+          dob: '',
+          address: '',
+          location: { city: '', state: '' },
+          accountType: 'user',
+          userid: uid,
+          updatedDate: new Date().toISOString(),
+          createdDate: new Date().toISOString(),
+          profilepic: '',
+          id: '',
+        };
+
+        // Call the method to add the new EvAdminProfile to Firestore
+        this.addNewUser(userProfile);
+
+        alert('Registration Successful');
+
+        // Navigate to the login page
+        this.router.navigate(['login/user']);
+      },
+      (err) => {
+        alert(err.message);
+        this.router.navigate(['register/user']);
+      }
+    );
+  }
+
+  // New Registering Add data as blank
+  addNewUser(userprofile: UserProfile) {
+    userprofile.id = this.afs.createId();
+    // Use the id as the document ID when adding to Firestore
+    return this.afs
+      .collection('/UserProfile')
+      .doc(userprofile.id)
+      .set(userprofile);
+  }
+
+  //user login and save session
+  userLogin(email: string, password: string) {
+    this.fireauth.signInWithEmailAndPassword(email, password).then(
+      (authResult) => {
+        const uid = authResult.user?.uid || '';
+
+        // Check if the user with this UID exists in the Firestore collection
+        const userRef = this.afs.collection('/UserProfile', (ref) =>
+          ref.where('userid', '==', uid)
+        );
+
+        userRef
+          .get()
+          .toPromise()
+          .then((snapshot) => {
+            if (snapshot && !snapshot.empty) {
+              // User found, check the accountType
+              const user = snapshot.docs[0].data() as UserProfile;
+              if (user.accountType === 'user') {
+                // Save user information in session storage
+                this.sst.store('webuser', user);
+
+                // Navigate to the dashboard
+                this.router.navigate(['user/dashboard']);
+              } else {
+                alert('Unauthorized access. Only logged in user allowed.');
+              }
+            } else {
+              alert('User profile not found.');
+            }
+          })
+          .catch((err) => {
+            console.error('Error checking user profile:', err);
+            alert('Something went wrong.');
+            this.router.navigate(['login/user']);
+          });
+      },
+      (err) => {
+        alert('Something Went Wrong');
+        this.router.navigate(['login/user']);
+      }
+    );
+  }
+
+  //get the user session
+  // Retrieve user session from sessionStorage
+  getWebUserSession(): UserProfile | null {
+    const userSession = this.sst.retrieve('webuser') as UserProfile;
+    return userSession || null;
+  }
+
+  //check that user is already logged in
+  checkExistingUserSession(): void {
+    // Check if there is an existing session with the evadmin accountType
+    const existingSessionUser = this.sst.retrieve('webuser') as EvAdminProfile;
+
+    if (existingSessionUser && existingSessionUser.accountType === 'user') {
+      // Redirect to dashboard since a valid session is already present
+      this.router.navigate(['user']);
+    } else {
+      this.router.navigate(['login/user']);
+    }
+  }
+
+  // Get Profile Using ID
+  async getUserProfileUsingID(userid: string): Promise<UserProfile | null> {
+    // Check if the admin with this ID exists in the Firestore collection
+    const userRef = this.afs.collection('/UserProfile', (ref) =>
+      ref.where('userid', '==', userid)
+    );
+
+    return userRef
+      .get()
+      .toPromise()
+      .then((snapshot) => {
+        if (snapshot && !snapshot.empty) {
+          // user found, return the profile
+          const userProfile = snapshot.docs[0].data() as UserProfile;
+          return userProfile;
+        } else {
+          // user not found
+          return null;
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting user profile:', err);
+        return null;
+      });
+  }
+
+  //signout
+  logOutUser() {
+    this.fireauth.signOut().then(() => {
+      // Clear the session storage
+      this.sst.clear();
+
+      // Redirect to the login page
+      this.router.navigate(['login/user']);
+    });
+  }
+
+  //for authguard user
+  checkUserLoggedIn(): boolean {
+    // Check if there is an existing session with the admin accountType
+    const existingSessionUser = this.sst.retrieve('webuser') as UserProfile;
+
+    // Return true if there is an existing session with superadmin or admin accountType, otherwise return false
+    return !!(
+      existingSessionUser && existingSessionUser.accountType === 'user'
+    );
+  }
 }
+
+/*******************************************************[End User]***********************************************************/

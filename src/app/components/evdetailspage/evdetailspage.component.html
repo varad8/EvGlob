@@ -1,0 +1,70 @@
+<app-navbar></app-navbar>
+<main class="dark:bg-gray-900 bg-white">
+    <div *ngIf="station" class="flex flex-wrap px-3 pt-10 pb-20">
+        <!-- First Row -->
+        <div class="w-full md:w-1/2 p-4">
+            <img [src]="station.imageUrl" alt="Station Image" class="w-full mb-4 dark:drop-shadow-lg rounded-md" />
+        </div>
+        <div class="w-full md:w-1/2 p-4">
+            <h2 class="text-4xl font-bold mb-2 dark:text-green-500">{{ station.title }}</h2>
+            <p class="text-gray-600 text-lg dark:text-gray-50">{{ station.description }}</p>
+            <p class="text-gray-600 text-lg dark:text-gray-50 py-2">{{ station.address }}</p>
+            <p class="text-gray-700 mt-2 dark:text-gray-200 py-2">Location: {{station.location.city}}, {{
+                station.location.state }}</p>
+            <p class="text-gray-700 dark:text-gray-200 text-2xl py-2"><span class="font-bold">Rs.</span> {{
+                station.rate }} / <span class="text-sm">per hour</span>
+            </p>
+            <div class="flex gap-3 mt-5">
+                <button (click)="bookSlot(station)"
+                    class="text-white bg-green-500 px-6 py-3 rounded-full shadow-md dark:shadow-green-500 dark:drop-shadow-lg">Book
+                    Now</button>
+                <button (click)="callNow()"
+                    class="text-white bg-sky-500 px-6 py-3 rounded-full shadow-md dark:shadow-sky-500 dark:drop-shadow-lg">Call
+                </button>
+            </div>
+        </div>
+
+        <!-- Second Row -->
+        <div class="w-full md:w-1/2 p-4">
+            <google-map width="100%" height="400" [center]="center" [zoom]="zoom">
+                <map-marker #marker="mapMarker" *ngFor="let markerPosition of markerPositions"
+                    [position]="markerPosition"></map-marker>
+                <map-info-window>{{station.title}}</map-info-window>
+            </google-map>
+
+
+        </div>
+
+        <div class="w-full md:w-1/2 p-4">
+            <h3 class="text-3xl font-bold text-black dark:text-gray-50">Timing</h3>
+            <div *ngFor="let day of getDayOfWeek()">
+                <div class="mt-2">
+                    <h4 class="text-[18px] text-gray-900 dark:text-gray-300">{{ day }}</h4>
+                    <div class="grid gap-3 grid-cols-2 md:gap-5">
+                        <div>
+                            <label for="{{ day }}OpeningTime" class="text-[15px] dark:text-gray-400">Opening
+                                Time:</label>
+                            <!-- Input field for opening time -->
+                            <input type="time" id="{{ day }}OpeningTime" name="{{ day }}OpeningTime"
+                                [value]="formatTime(station.evTimings[day].openingTime)" readonly
+                                class="w-full shadow-1 rounded-md border-[1.5px] font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default px-3 py-2" />
+                        </div>
+
+                        <div>
+                            <label for="{{ day }}ClosingTime" class="text-[15px] dark:text-gray-400">Closing
+                                Time:</label>
+                            <!-- Input field for closing time -->
+                            <input type="time" id="{{ day }}ClosingTime" name="{{ day }}ClosingTime" readonly
+                                [value]="formatTime(station.evTimings[day].closingTime)"
+                                class="w-full shadow-1 rounded-md border-[1.5px] font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default px-3 py-2" />
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </div>
+        </div>
+
+
+    </div>
+</main>
+<app-footer></app-footer>

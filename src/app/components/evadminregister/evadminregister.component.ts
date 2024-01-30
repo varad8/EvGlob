@@ -1,6 +1,5 @@
-import { Component, NgModule } from '@angular/core';
+import { Component } from '@angular/core';
 import { AuthService } from '../../shared/auth.service';
-import { NgModel } from '@angular/forms';
 
 @Component({
   selector: 'app-evadminregister',

@@ -9,12 +9,17 @@ import { AdminloginComponent } from './components/adminlogin/adminlogin.componen
 import { EvadminloginComponent } from './components/evadminlogin/evadminlogin.component';
 import { AuthGuard } from './guards/auth.guard';
 import { SauthGuard } from './guards/sauth.guard';
+import { EvdetailspageComponent } from './components/evdetailspage/evdetailspage.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
   // User
   { path: 'login/user', component: LoginComponent },
   { path: 'register/user', component: RegisterComponent },
+
+  // Ev Details Page
+  { path: 'evstation/:stationid', component: EvdetailspageComponent },
+
   // Ev Admin
   { path: 'register/evadmin', component: EvadminregisterComponent },
   { path: 'login/evadmin', component: EvadminloginComponent },
