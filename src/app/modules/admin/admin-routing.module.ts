@@ -12,9 +12,9 @@ const routes: Routes = [
     path: '',
     component: AdminDashboardComponent,
     children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AnalyticsComponent },
       { path: 'bookings', component: BookingComponent },
-      { path: 'payments', component: PaymentsComponent },
       { path: 'profile', component: ProfileComponent },
       { path: 'settings', component: SettingsComponent },
     ],
