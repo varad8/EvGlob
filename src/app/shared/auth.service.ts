@@ -495,7 +495,7 @@ export class AuthService {
                 this.sst.store('webuser', user);
 
                 // Navigate to the dashboard
-                this.router.navigate(['user/dashboard']);
+                this.router.navigate(['/']);
               } else {
                 alert('Unauthorized access. Only logged in user allowed.');
               }
@@ -541,6 +541,31 @@ export class AuthService {
     // Check if the admin with this ID exists in the Firestore collection
     const userRef = this.afs.collection('/UserProfile', (ref) =>
       ref.where('userid', '==', userid)
+    );
+
+    return userRef
+      .get()
+      .toPromise()
+      .then((snapshot) => {
+        if (snapshot && !snapshot.empty) {
+          // user found, return the profile
+          const userProfile = snapshot.docs[0].data() as UserProfile;
+          return userProfile;
+        } else {
+          // user not found
+          return null;
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting user profile:', err);
+        return null;
+      });
+  }
+
+  async getUserUsingID(userid: string): Promise<UserProfile | null> {
+    // Check if the admin with this ID exists in the Firestore collection
+    const userRef = this.afs.collection('/UserProfile', (ref) =>
+      ref.where('id', '==', userid)
     );
 
     return userRef

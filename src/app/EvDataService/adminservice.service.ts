@@ -5,8 +5,10 @@ import {
   AngularFireUploadTask,
 } from '@angular/fire/compat/storage';
 import { EvAdminProfile } from '../model/ev-admin-profile';
+import { UserProfile } from '../model/user-profile';
 import { Observable } from 'rxjs';
 import { map, finalize } from 'rxjs/operators';
+import { Bookingmodel } from '../model/bookingmodel';
 
 @Injectable({
   providedIn: 'root',
@@ -236,5 +238,102 @@ export class AdminserviceService {
     } catch (error) {
       console.error('Error updating profile image:', error);
     }
+  }
+
+  // Method to get count of documents with accountStatus status as "INACTIVE"
+  getCountOfInactiveAccounts(): Observable<number> {
+    return this.afs
+      .collection('/Evstation', (ref) =>
+        ref.where('accountStatus.status', '==', 'INACTIVE')
+      )
+      .valueChanges()
+      .pipe(
+        map((profiles: EvAdminProfile[]) => {
+          return profiles.length;
+        })
+      );
+  }
+
+  // Method to get count of documents with accountStatus status as "ACTIVE"
+  getCountOfActiveAccounts(): Observable<number> {
+    return this.afs
+      .collection('/Evstation', (ref) =>
+        ref.where('accountStatus.status', '==', 'ACTIVE')
+      )
+      .valueChanges()
+      .pipe(
+        map((profiles: EvAdminProfile[]) => {
+          return profiles.length;
+        })
+      );
+  }
+
+  // Method to get count of user profiles
+  getCountOfUserProfiles(): Observable<number> {
+    return this.afs
+      .collection('/UserProfile')
+      .valueChanges()
+      .pipe(
+        map((profiles: UserProfile[]) => {
+          return profiles.length;
+        })
+      );
+  }
+
+  // Method to get all profiles with accountStatus "INACTIVE"
+  getAllInactiveProfiles(): Observable<EvAdminProfile[]> {
+    return this.afs
+      .collection('/Evstation', (ref) =>
+        ref.where('accountStatus.status', '==', 'INACTIVE')
+      )
+      .valueChanges({ idField: 'id' }) as Observable<EvAdminProfile[]>;
+  }
+
+  // Method to get all profiles with accountStatus "ACTIVE"
+  getAllactiveProfiles(): Observable<EvAdminProfile[]> {
+    return this.afs
+      .collection('/Evstation', (ref) =>
+        ref.where('accountStatus.status', '==', 'ACTIVE')
+      )
+      .valueChanges({ idField: 'id' }) as Observable<EvAdminProfile[]>;
+  }
+
+  // Method to approve an inactive profile and update its status to "ACTIVE"
+  approveProfile(
+    profileId: string,
+    adminId: string,
+    approvedBy: string,
+    remark: string,
+    status: string
+  ): Promise<void> {
+    const profileRef = this.afs.collection('/Evstation').doc(profileId);
+    return profileRef.update({
+      'accountStatus.status': status,
+      'accountStatus.adminID': adminId,
+      'accountStatus.approvedBy': approvedBy,
+      'accountStatus.remark': remark,
+      'accountStatus.updatedAt': new Date().toISOString(),
+    });
+  }
+
+  // Method to get all profiles
+  getProfiles(): Observable<EvAdminProfile[]> {
+    return this.afs
+      .collection<EvAdminProfile>('/Evstation')
+      .valueChanges({ idField: 'id' });
+  }
+
+  //Getting All Booking data using stationid [id]
+  getBookingsByStationId(stationId: string): Observable<Bookingmodel[]> {
+    return this.afs
+      .collection<Bookingmodel>('EvBookingData', (ref) =>
+        ref.where('stationId', '==', stationId)
+      )
+      .valueChanges();
+  }
+
+  // Getting All Bookings
+  getAllBookings(): Observable<Bookingmodel[]> {
+    return this.afs.collection<Bookingmodel>('EvBookingData').valueChanges();
   }
 }

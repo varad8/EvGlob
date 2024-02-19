@@ -5,16 +5,21 @@ import { SevstationsComponent } from './scomponents/sevstations/sevstations.comp
 import { SprofileComponent } from './scomponents/sprofile/sprofile.component';
 import { SsettingsComponent } from './scomponents/ssettings/ssettings.component';
 import { SanalyticsComponent } from './scomponents/sanalytics/sanalytics.component';
+import { DetailsComponent } from './scomponents/details/details.component';
+import { BookingevComponent } from './scomponents/bookingev/bookingev.component';
 
 const routes: Routes = [
   {
     path: '',
     component: SdashboardComponent,
     children: [
+      { path: '', redirectTo: 'analytics', pathMatch: 'full' },
       { path: 'analytics', component: SanalyticsComponent },
       { path: 'profile', component: SprofileComponent },
       { path: 'settings', component: SsettingsComponent },
       { path: 'evstations', component: SevstationsComponent },
+      { path: 'details/:stationid', component: DetailsComponent },
+      { path: 'booking', component: BookingevComponent },
     ],
   },
 ];

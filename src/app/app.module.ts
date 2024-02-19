@@ -18,11 +18,13 @@ import { EvadminloginComponent } from './components/evadminlogin/evadminlogin.co
 import { EvadminregisterComponent } from './components/evadminregister/evadminregister.component';
 import { AdminloginComponent } from './components/adminlogin/adminlogin.component';
 import { AngularFireModule } from '@angular/fire/compat';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { environment } from '../environments/environment.development';
 import { NgxWebstorageModule } from 'ngx-webstorage';
 import { EvdetailspageComponent } from './components/evdetailspage/evdetailspage.component';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { ModalComponent } from './components/modal/modal.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -42,6 +44,7 @@ import { GoogleMapsModule } from '@angular/google-maps';
     EvadminregisterComponent,
     AdminloginComponent,
     EvdetailspageComponent,
+    ModalComponent,
   ],
   imports: [
     NgxWebstorageModule.forRoot(),
@@ -50,6 +53,8 @@ import { GoogleMapsModule } from '@angular/google-maps';
     FormsModule,
     AngularFireModule.initializeApp(environment.firebase),
     GoogleMapsModule,
+    HttpClientModule,
+    ReactiveFormsModule,
   ],
 
   providers: [],
