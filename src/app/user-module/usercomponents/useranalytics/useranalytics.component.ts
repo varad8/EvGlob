@@ -1,32 +1,34 @@
 import { Component } from '@angular/core';
-import { Bookingmodel } from '../../../../model/bookingmodel';
-import { EvAdminProfile } from '../../../../model/ev-admin-profile';
-import { AdminserviceService } from '../../../../EvDataService/adminservice.service';
-import { AuthService } from '../../../../shared/auth.service';
+import { AuthService } from '../../../shared/auth.service';
+import { UserservicesService } from '../../../UserDataService/userservices.service';
+import { Bookingmodel } from '../../../model/bookingmodel';
+import { UserProfile } from '../../../model/user-profile';
 
 @Component({
-  selector: 'app-analytics',
-  templateUrl: './analytics.component.html',
-  styleUrl: './analytics.component.css',
+  selector: 'app-useranalytics',
+  templateUrl: './useranalytics.component.html',
+  styleUrl: './useranalytics.component.css',
 })
-export class AnalyticsComponent {
+export class UseranalyticsComponent {
   bookings: Bookingmodel[];
-  session: EvAdminProfile;
+  session: UserProfile;
   todaysBookingsCount: number = 0;
   totalBookingsCount: number = 0;
   visitedUsersCount: number = 0;
   notVisitedUsersCount: number = 0;
-
-  constructor(private evdata: AdminserviceService, private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private userservice: UserservicesService
+  ) {}
 
   ngOnInit(): void {
-    this.session = this.auth.getSession();
+    this.session = this.auth.getWebUserSession();
     this.getBookings(this.session.id);
   }
 
-  async getBookings(stationid: string): Promise<void> {
-    this.evdata
-      .getBookingsByStationId(stationid)
+  async getBookings(userid: string): Promise<void> {
+    this.userservice
+      .getBookingDataByUserId(userid)
       .subscribe(async (bookings) => {
         this.bookings = bookings;
         this.populateChart();
@@ -112,7 +114,9 @@ export class AnalyticsComponent {
       const totalPayable = stationMonthYearTotals[key];
 
       // Format month and year for the label
-      const monthYearLabel = `${this.getMonthName(parseInt(month))} ${year} `;
+      const monthYearLabel = `${this.getMonthName(
+        parseInt(month)
+      )} ${year} - Station ID: ${stationId}`;
 
       // Dynamically calculate the height based on the total payable amount
       const height = totalPayable * 0.1; // You can adjust the scaling factor as needed
@@ -216,7 +220,9 @@ export class AnalyticsComponent {
       const count = stationMonthYearCounts[key];
 
       // Format month and year for the label
-      const monthYearLabel = `${this.getMonthName(parseInt(month))} ${year}`;
+      const monthYearLabel = `${this.getMonthName(
+        parseInt(month)
+      )} ${year} - Station ID: ${stationId}`;
 
       // Push data to chart arrays
       chartData.push(count);

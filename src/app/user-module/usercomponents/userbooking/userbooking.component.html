@@ -33,8 +33,8 @@
 
         <!-- Search by userid -->
         <div class="flex flex-col gap-1">
-            <span class="text-[15px] text-gray-600 dark:text-gray-300">Search by user id</span>
-            <input type="text" [(ngModel)]="searchUserId" (input)="filterBookings()" placeholder="Search by User Email"
+            <span class="text-[15px] text-gray-600 dark:text-gray-300">Search by station id</span>
+            <input type="text" [(ngModel)]="stationid" (input)="filterBookings()" placeholder="Search by User Email"
                 class="border border-gray-300 rounded-md p-1">
         </div>
 
@@ -129,8 +129,8 @@
 
                     <div *ngIf="booking.visitingStatus === 'not visited' && isFutureTime(booking.bookedForDate, calculateExpectedEndTime(booking.timeForBooked, booking.totalHoursEvBooking))"
                         class="px-4 py-2 rounded-b-lg  bg-gray-200">
-                        <button type="button" (click)="updateStatusToVisited(booking)"
-                            class="bg-green-500 flex justify-between items-center gap-4 text-white rounded-lg px-2 py-1">
+                        <button type="button" class="bg-green-500 flex justify-between items-center gap-4 text-white rounded-lg px-2
+                            py-1">
                             <span>Mark as Visited</span>
                             <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg"
                                 xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px"
@@ -162,8 +162,20 @@
 
 
 
-                    <div *ngIf="booking.visitingStatus === 'visited'" class="px-4 py-2 rounded-b-lg bg-green-200">
+
+                    <div *ngIf="booking.visitingStatus === 'visited'"
+                        class="px-4 py-2 rounded-b-lg flex gap-2 justify-between items-center bg-green-200">
                         <p class="text-sm text-gray-500">Visited</p>
+                        <button (click)="toggleModal(booking)"
+                            class="bg-green-700 text-white flex gap-2 justify-center items-center px-3 py-1 rounded-lg">Rate
+                            Us
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                class="h-8 w-8" version="1.1" id="Capa_1" viewBox="0 0 47.94 47.94"
+                                xml:space="preserve">
+                                <path style="fill:#ED8A19;"
+                                    d="M26.285,2.486l5.407,10.956c0.376,0.762,1.103,1.29,1.944,1.412l12.091,1.757  c2.118,0.308,2.963,2.91,1.431,4.403l-8.749,8.528c-0.608,0.593-0.886,1.448-0.742,2.285l2.065,12.042  c0.362,2.109-1.852,3.717-3.746,2.722l-10.814-5.685c-0.752-0.395-1.651-0.395-2.403,0l-10.814,5.685  c-1.894,0.996-4.108-0.613-3.746-2.722l2.065-12.042c0.144-0.837-0.134-1.692-0.742-2.285l-8.749-8.528  c-1.532-1.494-0.687-4.096,1.431-4.403l12.091-1.757c0.841-0.122,1.568-0.65,1.944-1.412l5.407-10.956  C22.602,0.567,25.338,0.567,26.285,2.486z" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </ng-container>
@@ -178,6 +190,47 @@
                         keyTimes="0;1" values="0 50 51;360 50 51"></animateTransform>
                 </path>
             </svg></div>
+
+
+    </div>
+</div>
+
+
+<!-- Opening rating modal when click -->
+<div class="min-h-screen bg-black bg-opacity-50 py-6 flex flex-col justify-center sm:py-12 fixed inset-0 z-50"
+    *ngIf="showModal">
+    <div class="py-3 sm:max-w-xl sm:mx-auto">
+        <div class="bg-white min-w-1xl flex flex-col rounded-xl shadow-lg">
+            <div class="px-12 py-5">
+                <h2 class="text-gray-800 text-3xl font-semibold">Your opinion matters to us!</h2>
+            </div>
+            <div class="bg-gray-200 w-full flex flex-col items-center">
+                <div class="flex flex-col items-center py-6 space-y-3">
+                    <span class="text-md text-gray-800">How was quality of the EvStation
+                        {{selectedBooking.stationId}}?</span>
+                    <div class="flex space-x-3">
+                        <svg *ngFor="let star of stars; let i = index" [class]="star.class"
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            (click)="rate(i + 1)">
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                    </div>
+                    <p>You rated {{ filledStars }}/5</p>
+                </div>
+                <div class="w-3/4 flex flex-col">
+                    <textarea rows="3" class="p-4 text-gray-500 rounded-xl resize-none"
+                        placeholder="Leave a message, if you want" [(ngModel)]="feedbackMsg"
+                        name="feedbackMsg"></textarea>
+                    <button (click)="rateNow(this.selectedBooking)"
+                        class="py-3 my-8 text-lg bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl text-white">Rate
+                        now</button>
+                </div>
+            </div>
+            <div class="h-20 flex items-center justify-center">
+                <button type="button" (click)="toggleClose()" class="text-gray-600">Maybe later</button>
+            </div>
+        </div>
 
 
     </div>

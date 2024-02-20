@@ -6,6 +6,7 @@ import { BookingComponent } from './components/booking/booking.component';
 import { PaymentsComponent } from './components/payments/payments.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { SettingsComponent } from './components/settings/settings.component';
+import { FeedbackComponent } from './components/feedback/feedback.component';
 
 const routes: Routes = [
   {
@@ -16,6 +17,7 @@ const routes: Routes = [
       { path: 'dashboard', component: AnalyticsComponent },
       { path: 'bookings', component: BookingComponent },
       { path: 'profile', component: ProfileComponent },
+      { path: 'ratings', component: FeedbackComponent },
       { path: 'settings', component: SettingsComponent },
     ],
   },

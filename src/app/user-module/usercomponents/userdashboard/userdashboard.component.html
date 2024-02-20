@@ -16,16 +16,15 @@
         <!-- Profile  -->
         <div class="flex flex-col justify-start items-center rounded-md mb-3 gap-2 bg-slate-700 px-3 py-3">
             <div class="flex justify-center items-center">
-                <img [src]="evAdminProfile?.profile?.profilepic" class="w-14 h-14 border rounded-full object-fill"
-                    [alt]="evAdminProfile?.profile?.firstname" />
+                <img [src]="userProfile?.profilepic" class="w-14 h-14 border rounded-full object-fill"
+                    [alt]="userProfile?.firstname" />
             </div>
             <div class="flex flex-col flex-wrap">
-                <h3 class="text-white items-center text-lg">{{evAdminProfile?.profile?.firstname}}
-                    {{evAdminProfile?.profile?.lastname}}</h3>
-                <p class="text-sm">Station ID : {{evAdminProfile?.evid}}</p>
-                <p class="text-sm">UID : {{evAdminProfile?.userid}}</p>
-                <p class="text-sm">ID : {{evAdminProfile?.id}}</p>
-                <p class="text-sm">Email : {{evAdminProfile?.profile?.email}}</p>
+                <h3 class="text-white items-center text-lg">{{userProfile?.firstname}}
+                    {{userProfile?.firstname}}</h3>
+                <p class="text-sm">AD ID : {{userProfile?.userid}}</p>
+                <p class="text-sm">AC Type : {{userProfile?.accountType}}</p>
+                <p class="text-sm">Email : {{userProfile?.email}}</p>
             </div>
         </div>
 
@@ -35,7 +34,7 @@
         <p class="mb-4 text-gray-400">MENU</p>
 
         <!-- Dashboard Menu -->
-        <a routerLink="dashboard"
+        <a routerLink="analytics"
             class="flex items-center gap-2 text-lg text-gray-300 hover:text-white  mb-1 hover:bg-slate-600 px-2 py-2"
             routerLinkActive="bg-slate-600 dark:bg-slate-600">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -47,7 +46,7 @@
         </a>
 
         <!-- Booking List -->
-        <a routerLink="bookings" routerLinkActive="bg-slate-600 dark:bg-slate-600"
+        <a routerLink="booking" routerLinkActive="bg-slate-600 dark:bg-slate-600"
             class="flex items-center gap-2 text-lg text-gray-300 hover:text-white  mb-1 hover:bg-slate-600 px-2 py-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-6 h-6">
@@ -57,16 +56,7 @@
             Booking
         </a>
 
-        <!-- Payments -->
-        <!-- <a routerLink="payments" routerLinkActive="bg-slate-600 dark:bg-slate-600"
-            class="flex items-center gap-2 text-lg text-gray-300 hover:text-white  mb-1 hover:bg-slate-600 px-2 py-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
-            </svg>
-            Payments
-        </a> -->
+
 
         <!-- Profile Menu -->
         <a routerLink="profile" routerLinkActive="bg-slate-600 dark:bg-slate-600"
@@ -78,7 +68,6 @@
             </svg>
             Profile
         </a>
-
 
         <!-- Ratings -->
         <a routerLink="ratings" routerLinkActive="bg-slate-600 dark:bg-slate-600"
@@ -139,16 +128,6 @@
             </button>
         </div>
 
-        <!-- Forgot Password -->
-        <!-- <a href="#"
-            class="flex items-center gap-2 text-lg text-gray-300 hover:text-white  mb-1 hover:bg-slate-600 px-2 py-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-            </svg>
-            Forgot Password
-        </a> -->
 
         <!-- Sign OUt -->
 
@@ -182,18 +161,17 @@
             <div class="flex justify-between items-center">
                 <h3 class="text-2xl font-serif hidden lg:block xl:block">EvGlob</h3>
                 <div class="hidden lg:block xl:block">
-                    <img [src]="evAdminProfile?.profile?.profilepic"
+                    <img [src]="userProfile?.profilepic"
                         class="rounded-full drop-shadow-md border border-slate-300 w-10 h-10"
-                        [alt]="evAdminProfile?.profile?.firstname" />
+                        [alt]="userProfile?.firstname" />
                 </div>
             </div>
         </header>
 
         <!-- Main Content Area -->
-        <div class="flex-1 overflow-y-scroll bg-gray-50 dark:bg-gray-900 px-4 py-3">
+        <div class="flex-1 overflow-x-auto bg-gray-50 dark:bg-gray-900 px-4 py-3">
             <!-- Router Outlet for displaying different components -->
-            <router-outlet>
-            </router-outlet>
+            <router-outlet></router-outlet>
         </div>
     </div>
 

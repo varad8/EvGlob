@@ -9,6 +9,7 @@ import { UserProfile } from '../model/user-profile';
 import { Observable } from 'rxjs';
 import { map, finalize } from 'rxjs/operators';
 import { Bookingmodel } from '../model/bookingmodel';
+import { Ratingmodel } from '../model/ratingmodel';
 
 @Injectable({
   providedIn: 'root',
@@ -335,5 +336,29 @@ export class AdminserviceService {
   // Getting All Bookings
   getAllBookings(): Observable<Bookingmodel[]> {
     return this.afs.collection<Bookingmodel>('EvBookingData').valueChanges();
+  }
+
+  //update status of visitingStatus and visitingTimestamp
+  updateStatusOfVisit(docId: string, newStatus: string, newTimestamp: number) {
+    // Reference to the booking document
+    const bookingDocRef = this.afs
+      .collection<Bookingmodel>('EvBookingData')
+      .doc(docId);
+
+    // Update the fields
+    return bookingDocRef.update({
+      visitingStatus: newStatus,
+      visitingTimeStamp: newTimestamp,
+      remark: newStatus,
+    });
+  }
+
+  //rating by stationId
+  getRatingsByStationID(stationId: string): Observable<Ratingmodel[]> {
+    return this.afs
+      .collection<Ratingmodel>('ratings', (ref) =>
+        ref.where('stationId', '==', stationId)
+      )
+      .valueChanges();
   }
 }

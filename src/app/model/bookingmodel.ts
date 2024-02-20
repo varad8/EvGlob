@@ -20,4 +20,6 @@ export interface Bookingmodel {
     cardno: string;
     createdDate: number;
   };
+
+  bookingRefId: string;
 }

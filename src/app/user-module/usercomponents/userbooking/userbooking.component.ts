@@ -1,55 +1,55 @@
 import { Component } from '@angular/core';
-import { Bookingmodel } from '../../../../model/bookingmodel';
-import { UserProfile } from '../../../../model/user-profile';
-import { AdminserviceService } from '../../../../EvDataService/adminservice.service';
-import { ActivatedRoute } from '@angular/router';
-import { AuthService } from '../../../../shared/auth.service';
-import { EvAdminProfile } from '../../../../model/ev-admin-profile';
+import { Bookingmodel } from '../../../model/bookingmodel';
+import { UserservicesService } from '../../../UserDataService/userservices.service';
+import { AuthService } from '../../../shared/auth.service';
+import { UserProfile } from '../../../model/user-profile';
+import { Ratingmodel } from '../../../model/ratingmodel';
 
 @Component({
-  selector: 'app-booking',
-  templateUrl: './booking.component.html',
-  styleUrl: './booking.component.css',
+  selector: 'app-userbooking',
+  templateUrl: './userbooking.component.html',
+  styleUrl: './userbooking.component.css',
 })
-export class BookingComponent {
-  bookings: Bookingmodel[];
+export class UserbookingComponent {
+  bookings: Bookingmodel[] | undefined;
   userProfiles: UserProfile[] = [];
   filteredBookings: Bookingmodel[];
   filterType: string = 'All';
   searchTerm: string = '';
   filterDate: string = '';
-  searchUserId: string = '';
-  session: EvAdminProfile;
+  stationid: string = '';
+  session: UserProfile;
+  showModal: boolean = false;
+  selectedBooking: Bookingmodel;
+  feedbackMsg: string = '';
 
   constructor(
-    private evdata: AdminserviceService,
-    private route: ActivatedRoute,
+    private userservice: UserservicesService,
     private auth: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.session = this.auth.getSession();
+    this.session = this.auth.getWebUserSession();
+    console.log(this.session.id);
     this.getBookings(this.session.id);
   }
 
-  async getBookings(stationid: string): Promise<void> {
-    this.evdata
-      .getBookingsByStationId(stationid)
-      .subscribe(async (bookings) => {
-        this.bookings = bookings;
+  async getBookings(userid: string): Promise<void> {
+    this.userservice.getBookingsByUserId(userid).subscribe(async (bookings) => {
+      this.bookings = bookings;
 
-        for (const booking of this.bookings) {
-          if (booking.userId) {
-            const userProfile = await this.auth.getUserUsingID(booking.userId);
-            if (userProfile) {
-              this.userProfiles.push(userProfile);
-            }
+      for (const booking of this.bookings) {
+        if (booking.userId) {
+          const userProfile = await this.auth.getUserUsingID(booking.userId);
+          if (userProfile) {
+            this.userProfiles.push(userProfile);
           }
         }
+      }
 
-        this.filteredBookings = this.bookings;
-        this.filterBookings();
-      });
+      this.filteredBookings = this.bookings;
+      this.filterBookings();
+    });
   }
 
   filterBookings(): void {
@@ -103,9 +103,9 @@ export class BookingComponent {
       );
     }
 
-    if (this.searchUserId.trim() !== '') {
+    if (this.stationid.trim() !== '') {
       tempBookings = tempBookings.filter((booking) =>
-        booking.userId.toLowerCase().includes(this.searchUserId.toLowerCase())
+        booking.stationId.toLowerCase().includes(this.stationid.toLowerCase())
       );
     }
 
@@ -171,44 +171,96 @@ export class BookingComponent {
     return bookingDate.getTime() > currentDate.getTime();
   }
 
-  //update booking status by using that id
-  updateStatusToVisited(bookingData: Bookingmodel): void {
-    // Construct the message with booking information
-    const confirmationMessage = `Are you sure you want to update the booking status to "visited" for the following booking?\n\nUser Id: ${
-      bookingData.userId
-    }\nStation Id: ${bookingData.stationId}\nBooked For: ${
-      bookingData.bookedForDate
-    }\nTime: ${bookingData.timeForBooked}\nHours of Booking: ${
-      bookingData.totalHoursEvBooking
-    } hrs.\nExpected End Time: ${this.calculateExpectedEndTime(
-      bookingData.timeForBooked,
-      bookingData.totalHoursEvBooking
-    )}\nStatus: ${bookingData.visitingStatus}\nBooking Slot: ${
-      bookingData.bookingSlot
-    }\nTotal Payable: ₹${bookingData.totalPayable}\nRemark: ${
-      bookingData.remark
-    }`;
+  rateUse(bookingdata: Bookingmodel) {
+    console.log(bookingdata);
+  }
 
-    // Ask for confirmation before updating the status
-    const confirmUpdate = confirm(confirmationMessage);
+  // Function to toggle the modal visibility
+  toggleModal(dataofbooking: Bookingmodel) {
+    this.selectedBooking = dataofbooking;
+    this.showModal = !this.showModal;
 
-    if (confirmUpdate) {
-      const newStatus = 'visited';
-      const newTimestamp = Date.now();
+    // Call the method to get rating data for the selected booking
 
-      this.evdata
-        .updateStatusOfVisit(bookingData.bookingRefId, newStatus, newTimestamp)
-        .then(() => {
-          console.log('Booking status updated to visited successfully');
-          alert('Booking status updated to visited successfully');
-        })
-        .catch((error) => {
-          console.error('Error updating booking status:', error);
-          alert('Error updating booking status:' + error);
-        });
+    this.userservice
+      .getRatingByUserIdAndStationId(
+        dataofbooking.userId,
+        dataofbooking.stationId
+      )
+      .subscribe((ratingData: Ratingmodel[]) => {
+        // Handle the rating data here, such as displaying it in the modal
+        console.log('Rating data:', ratingData[0]);
+        if (ratingData.length > 0) {
+          this.filledStars = ratingData[0].rating;
+        } else {
+          this.filledStars = 0; // If no rating data found, set filledStars to 0
+        }
+        this.feedbackMsg = ratingData[0]?.feedbackMsg || ''; // Set feedback message
+        this.updateStars();
+      });
+  }
+
+  toggleClose() {
+    this.showModal = false;
+    this.filledStars = 0;
+    this.updateStars();
+    this.feedbackMsg = '';
+    this.selectedBooking = undefined;
+    this.showModal = false;
+  }
+
+  filledStars: number = 0;
+  stars: { class: string }[] = [
+    { class: 'w-12 h-12 text-gray-500' },
+    { class: 'w-12 h-12 text-gray-500' },
+    { class: 'w-12 h-12 text-gray-500' },
+    { class: 'w-12 h-12 text-gray-500' },
+    { class: 'w-12 h-12 text-gray-500' },
+  ];
+
+  rate(index: number): void {
+    if (index === this.filledStars - 1) {
+      // If the user clicks on the currently filled star, deselect it
+      this.filledStars = Math.max(0, this.filledStars - 1); // Ensure it doesn't go below 0
     } else {
-      console.log('Update cancelled by user');
-      alert('Update cancelled by user');
+      // Otherwise, update the filled stars count
+      this.filledStars = Math.min(index + 1, 5); // Ensure it doesn't exceed 5
     }
+    this.updateStars();
+  }
+
+  updateStars(): void {
+    this.stars.forEach((star, i) => {
+      star.class =
+        i < this.filledStars
+          ? 'w-12 h-12 text-yellow-500'
+          : 'w-12 h-12 text-gray-500';
+    });
+  }
+
+  rateNow(bookingData: Bookingmodel): void {
+    // Create a Ratingmodel object with the necessary data
+    const ratingData: Ratingmodel = {
+      docid: '',
+      stationId: bookingData.stationId,
+      userId: bookingData.userId,
+      rating: this.filledStars,
+      feedbackMsg: this.feedbackMsg,
+    };
+
+    // Call the saveOrUpdateRating method with the ratingData
+    this.userservice
+      .saveOrUpdateRating(ratingData)
+      .then(() => {
+        this.filledStars = 0;
+        this.updateStars();
+        this.feedbackMsg = '';
+        this.selectedBooking = undefined;
+        this.showModal = false;
+        alert('Rating saved successfully!');
+      })
+      .catch((error) => {
+        alert('Error saving rating: ' + error);
+      });
   }
 }

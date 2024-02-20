@@ -670,6 +670,7 @@ export class EvdetailspageComponent {
               cardno: this.enteredCardNumber,
               createdDate: Date.now(),
             },
+            bookingRefId: '',
           };
           this.isModalOpen = false;
           this.openBookingModal = false;

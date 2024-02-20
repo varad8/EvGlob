@@ -10,6 +10,7 @@ import { EvadminloginComponent } from './components/evadminlogin/evadminlogin.co
 import { AuthGuard } from './guards/auth.guard';
 import { SauthGuard } from './guards/sauth.guard';
 import { EvdetailspageComponent } from './components/evdetailspage/evdetailspage.component';
+import { UserAuthGuard } from './guards/userauth.guard';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -41,6 +42,16 @@ const routes: Routes = [
     loadChildren: () =>
       import('./modules_admin/superadmin/superadmin.module').then(
         (s) => s.SuperadminModule
+      ),
+  },
+
+  // User Dashboard
+  {
+    path: 'user',
+    canActivate: [UserAuthGuard],
+    loadChildren: () =>
+      import('./user-module/user-module.module').then(
+        (s) => s.UserModuleModule
       ),
   },
 

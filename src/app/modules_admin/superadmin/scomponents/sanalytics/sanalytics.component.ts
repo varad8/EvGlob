@@ -136,14 +136,10 @@ export class SanalyticsComponent {
   chartData: any[] = [];
   chartLabels: string[] = [];
   chartColors: any[] = [];
-  chartOptions = {
-    responsive: true,
-  };
 
   chartDataa: any[] = [];
   chartLabelss: string[] = [];
   chartColorss: any[] = [];
-  maxValue: number;
 
   populateChart() {
     // Fetch data and update chart options here
