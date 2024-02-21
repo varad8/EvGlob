@@ -90,7 +90,7 @@ export class SettingsComponent {
           this.citiesapiData = data;
 
           // You can now use this.apiData in your component template or perform any other actions with the data
-          console.log(data);
+          // console.log(data);
         },
         (error) => {
           console.error('Error fetching data:', error);

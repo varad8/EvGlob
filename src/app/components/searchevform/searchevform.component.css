@@ -2,7 +2,7 @@
   @apply dark:bg-gray-900 h-32 bg-white;
 }
 .ev-search-container {
-  @apply absolute left-1/2 w-1/2 overflow-auto dark:bg-gray-900  transform -translate-x-1/2 bg-white shadow-lg  border-2 p-4 rounded text-black;
+  @apply absolute left-1/2 w-[55%] overflow-auto dark:bg-gray-900  transform -translate-x-1/2 bg-white shadow-lg  border-2 p-4 rounded text-black;
   @apply drop-shadow-lg dark:shadow-green-500 dark:text-white border-slate-200;
 }
 .ev-search {

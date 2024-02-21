@@ -468,7 +468,9 @@ export class EvdetailspageComponent {
 
                 if (isConfirmed) {
                   // User confirmed, proceed with booking logic
+
                   this.openPaymentModal();
+
                   console.log(
                     'Booking confirmed. Implement your booking logic here.'
                   );

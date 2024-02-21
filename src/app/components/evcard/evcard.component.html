@@ -4,7 +4,7 @@
             <a routerLink="evstation/{{station.userid}}">
                 <img [src]="station.imageUrl" alt="{{ station.title }}" class="evcard-img" />
                 <h2 class="evtitle">{{ station.title }}</h2>
-                <p class="evdescription">{{ station.description }}</p>
+                <p class="evdescription">{{ station.description.substring(0,100) }}</p>
                 <div class="ev-content">
                     <div class="ev-content-center">
                         <div>

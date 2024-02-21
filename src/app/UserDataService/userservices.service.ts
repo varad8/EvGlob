@@ -3,7 +3,11 @@ import { EvAdminProfile } from '../model/ev-admin-profile';
 import {
   AngularFirestore,
   AngularFirestoreDocument,
+  CollectionReference,
+  DocumentData,
   DocumentReference,
+  Query,
+  QueryFn,
 } from '@angular/fire/compat/firestore';
 import { Observable } from 'rxjs';
 import { Bookingmodel } from '../model/bookingmodel';
@@ -266,6 +270,28 @@ export class UserservicesService {
       .collection<Ratingmodel>('ratings', (ref) =>
         ref.where('userId', '==', userId)
       )
+      .valueChanges();
+  }
+
+  getEvAdminProfileByLocation(
+    city: string,
+    state: string
+  ): Observable<EvAdminProfile[]> {
+    let query: QueryFn<DocumentData> | undefined = undefined;
+
+    if (city && state) {
+      query = (ref) =>
+        ref
+          .where('location.city', '==', city)
+          .where('location.state', '==', state);
+    } else if (city) {
+      query = (ref) => ref.where('location.city', '==', city);
+    } else if (state) {
+      query = (ref) => ref.where('location.state', '==', state);
+    }
+
+    return this.firestore
+      .collection<EvAdminProfile>('Evstation', query)
       .valueChanges();
   }
 }
