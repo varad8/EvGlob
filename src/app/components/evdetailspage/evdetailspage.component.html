@@ -15,7 +15,7 @@
                 station.rate }} / <span class="text-sm">per hour</span>
             </p>
             <div class="flex gap-3 mt-5">
-                <button (click)="bookSlot(station)"
+                <button [disabled]="openBookingModal" (click)="bookSlot(station)"
                     class="text-white bg-green-500 px-6 py-3 rounded-full shadow-md dark:shadow-green-500 dark:drop-shadow-lg">Book
                     Now</button>
                 <button (click)="callNow()"
@@ -287,6 +287,36 @@
     </div>
 
 </main>
+
+<!-- Warning Modal -->
+<div *ngIf="warning" class="fixed inset-0 flex items-center justify-center z-50">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-900 opacity-50"></div>
+
+    <!-- Modal container -->
+    <div class="bg-white p-8 rounded shadow-md max-w-sm z-50">
+        <!-- Modal header -->
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Warning!</h3>
+            <!-- Close button -->
+            <button class="text-gray-500 hover:text-gray-700" (click)="cloaseWarnigModal()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <!-- Modal body -->
+        <p class="text-gray-700">{{warning}}</p>
+    </div>
+</div>
+
+
+<!-- Booking Successful Model -->
+<app-bookingmodal *ngIf="bookingSuccessModalVisible" (closeModalEvent)="closeBookingSuccessModal()"></app-bookingmodal>
+
+
 
 
 <app-footer></app-footer>

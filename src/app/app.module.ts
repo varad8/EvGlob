@@ -25,6 +25,7 @@ import { EvdetailspageComponent } from './components/evdetailspage/evdetailspage
 import { GoogleMapsModule } from '@angular/google-maps';
 import { ModalComponent } from './components/modal/modal.component';
 import { HttpClientModule } from '@angular/common/http';
+import { BookingmodalComponent } from './components/alertmodal/bookingmodal/bookingmodal.component';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { HttpClientModule } from '@angular/common/http';
     AdminloginComponent,
     EvdetailspageComponent,
     ModalComponent,
+    BookingmodalComponent,
   ],
   imports: [
     NgxWebstorageModule.forRoot(),

@@ -48,6 +48,9 @@ export class EvdetailspageComponent {
   isLoading: boolean = false;
   paymentSuccess: boolean = false;
   isModalOpen: boolean = false;
+  warning: string = '';
+  warningModal: boolean = false;
+  bookingSuccessModalVisible: boolean = false;
 
   cards: any[] = [
     {
@@ -458,9 +461,8 @@ export class EvdetailspageComponent {
                   // There is an overlap, the slot is not available
                   const bookingStartTime = `${bookingStart.getHours()}:${bookingStart.getMinutes()}`;
                   const bookingEndTime = `${bookingEnd.getHours()}:${bookingEnd.getMinutes()}`;
-                  window.alert(
-                    `Slot is already booked from ${bookingStartTime} to ${bookingEndTime}. Please choose another slot time.`
-                  );
+                  this.warning = `Slot is already booked from ${bookingStartTime} to ${bookingEndTime}. Please choose another slot time.`;
+                  this.warningModal = true;
                   return true;
                 }
                 return false;
@@ -500,18 +502,20 @@ export class EvdetailspageComponent {
               }
             } else {
               // Display an alert if the selected time or expected end time is outside the opening and closing times
-              window.alert(
-                'Please select a valid time and duration within the opening and closing hours.'
-              );
+              this.warning =
+                'Please select a valid time and duration within the opening and closing hours.';
+              this.warningModal = true;
             }
           } else {
             // Display an alert if the timings are not available for the selected day
-            window.alert('Timings not available for the selected day.');
+            this.warning = 'Timings not available for the selected day.';
+            this.warningModal = true;
           }
         });
     } else {
       // Display an alert if a slot, date, time, or duration is not selected
-      window.alert('Please fill in all details before booking.');
+      this.warning = 'Please fill in all details before booking.';
+      this.warningModal = true;
     }
   }
 
@@ -728,7 +732,7 @@ export class EvdetailspageComponent {
           this.evdata
             .saveBookingData(bookingData)
             .then((res) => {
-              alert('Booking Successfull');
+              this.showBookingSuccessModal();
             })
             .catch((error) => {
               alert('Error saving booking data: ' + error);
@@ -791,5 +795,20 @@ export class EvdetailspageComponent {
 
     // Return formatted time
     return `${formattedHours}:${formattedMinutes}`;
+  }
+
+  cloaseWarnigModal() {
+    this.warningModal = false;
+    this.warning = '';
+  }
+
+  // Method to close the booking success modal
+  closeBookingSuccessModal() {
+    this.bookingSuccessModalVisible = false;
+  }
+
+  // Method to show the booking success modal
+  showBookingSuccessModal() {
+    this.bookingSuccessModalVisible = true;
   }
 }
