@@ -1,253 +1,3 @@
-// import { Component } from '@angular/core';
-// import { AuthService } from '../../shared/auth.service';
-// import { HttpClient } from '@angular/common/http';
-// import { EvAdminProfile } from '../../model/ev-admin-profile';
-// import { UserservicesService } from '../../UserDataService/userservices.service';
-// import { UserProfile } from '../../model/user-profile';
-// import { Bookingmodel } from '../../model/bookingmodel';
-
-// @Component({
-//   selector: 'app-searchevform',
-//   templateUrl: './searchevform.component.html',
-//   styleUrl: './searchevform.component.css',
-// })
-// export class SearchevformComponent {
-//   selectedCityName: string = '';
-//   selectedCityState: string = '';
-//   selectedSlot: string;
-//   selectedDate: string;
-//   selectedTime: string;
-//   selectedHours: string;
-//   evStationData: EvAdminProfile[];
-//   session: UserProfile;
-//   evBookingData: Bookingmodel[];
-
-//   citiesapiData: any;
-
-//   constructor(
-//     private auth: AuthService,
-//     private http: HttpClient,
-//     private userservice: UserservicesService
-//   ) {}
-
-//   ngOnInit() {
-//     this.session = this.auth.getWebUserSession();
-
-//     // Make an HTTP GET request to the API
-//     this.http
-//       .get('https://mocki.io/v1/79c1cf35-6327-4ffc-9e38-16e5a9fba095')
-//       .subscribe(
-//         (data: any) => {
-//           // Assign the received data to the variable
-//           this.citiesapiData = data;
-
-//           // You can now use this.apiData in your component template or perform any other actions with the data
-//           // console.log(data);
-//         },
-//         (error) => {
-//           console.error('Error fetching data:', error);
-//         }
-//       );
-//   }
-
-//   //get selected city and state
-//   onCityChange(event: any): void {
-//     this.selectedCityName = event.target.value;
-//     this.selectedCityState = this.getState(this.selectedCityName);
-//   }
-
-//   //get Selected state
-//   getState(cityName: string): string {
-//     const selectedCity = this.citiesapiData.find(
-//       (city: any) => city.name === cityName
-//     );
-//     return selectedCity ? selectedCity.state : '';
-//   }
-
-//   onSearch(city: string, state: string) {
-//     console.log(city, state);
-
-//     if (this.session) {
-//       if (city && state) {
-//         this.userservice
-//           .getEvAdminProfileByLocation(city, state)
-//           .subscribe((data: EvAdminProfile[]) => {
-//             this.evStationData = data;
-//             console.log('EV station data:', this.evStationData);
-
-//             // Check slot availability after getting evStationData
-//             this.checkSlotAvailability();
-//           });
-//       } else {
-//         alert('select location');
-//       }
-//     } else {
-//       alert('Logged in first');
-//     }
-//   }
-
-//   checkSlotAvailability() {
-//     if (
-//       !this.selectedDate ||
-//       !this.selectedSlot ||
-//       !this.selectedTime ||
-//       !this.evStationData ||
-//       !this.selectedHours
-//     ) {
-//       console.error('Missing required parameters.');
-//       return;
-//     }
-
-//     const currentDate = new Date();
-//     const selectedDateTime = new Date(
-//       this.selectedDate + 'T' + this.selectedTime
-//     );
-
-//     // Check if the selected date and time are in the past
-//     if (selectedDateTime < currentDate) {
-//       alert('Selected date or time is in the past.');
-//       console.error('Selected date or time is in the past.');
-//       return;
-//     }
-
-//     this.evStationData.forEach((station: EvAdminProfile) => {
-//       const stationId = station.id;
-//       // Check if evTimings[selectedDay] is defined before accessing its properties
-//       const selectedDay = selectedDateTime.getDay();
-//       const selectedDayTimings = station.evTimings[selectedDay];
-//       if (!selectedDayTimings) {
-//         console.error(
-//           `No timing information available for ${stationId} on selected day.`
-//         );
-//         return;
-//       }
-//       const openingTime = new Date(
-//         selectedDayTimings.openingTime.seconds * 1000
-//       );
-//       const closingTime = new Date(
-//         selectedDayTimings.closingTime.seconds * 1000
-//       );
-
-//       // Calculate expected end time based on selected time and duration
-//       const expectedEndTime = this.calculateEndTime(
-//         this.selectedTime,
-//         this.selectedHours
-//       );
-
-//       // Check if the expected end time exceeds the closing time
-//       const expectedEndTimeDate = new Date(
-//         this.selectedDate + 'T' + expectedEndTime
-//       );
-//       if (expectedEndTimeDate > closingTime) {
-//         console.log(
-//           `Expected end time exceeds closing time for station ${stationId}.`
-//         );
-//         return;
-//       }
-
-//       // Retrieve booking data for the station, date, and slot
-//       this.userservice
-//         .getBookingDataByStationIdAndDate(
-//           stationId,
-//           this.selectedDate,
-//           this.selectedSlot
-//         )
-//         .subscribe((bookings: Bookingmodel[]) => {
-//           console.log(
-//             `Booking data for station ${stationId} on ${this.selectedDate} for slot ${this.selectedSlot}:`,
-//             bookings
-//           );
-
-//           // Implement logic to check slot availability and suggest available slots
-//           const availableSlots = this.findAvailableSlots(
-//             bookings,
-//             openingTime,
-//             closingTime
-//           );
-//           console.log(
-//             `Available slots for station ${stationId}:`,
-//             availableSlots
-//           );
-//         });
-//     });
-//   }
-
-//   findAvailableSlots(
-//     bookings: Bookingmodel[],
-//     openingTime: Date,
-//     closingTime: Date
-//   ): string[] {
-//     const availableSlots: string[] = [];
-//     const durationHours = parseInt(this.selectedHours, 10);
-//     const startTime = new Date(this.selectedDate + 'T' + this.selectedTime);
-
-//     // Iterate through the opening and closing times to find available slots
-//     let currentTime = new Date(startTime);
-//     while (currentTime <= closingTime) {
-//       // Check if there is any booking within the current time slot
-//       const endTime = new Date(
-//         currentTime.getTime() + durationHours * 60 * 60 * 1000
-//       );
-//       const isBookingConflict = bookings.some((booking) => {
-//         const bookingStartTime = new Date(booking.timeForBooked);
-//         const bookingEndTime = new Date(
-//           bookingStartTime.getTime() +
-//             parseInt(booking.totalHoursEvBooking, 10) * 60 * 60 * 1000
-//         );
-//         return bookingStartTime < endTime && bookingEndTime > currentTime;
-//       });
-
-//       // If no booking conflicts, add the slot to available slots
-//       if (!isBookingConflict && currentTime >= openingTime) {
-//         availableSlots.push(
-//           currentTime.toLocaleTimeString([], {
-//             hour: '2-digit',
-//             minute: '2-digit',
-//           })
-//         );
-//       }
-
-//       // Move to the next time slot
-//       currentTime = new Date(
-//         currentTime.getTime() + (durationHours + 1) * 60 * 60 * 1000
-//       );
-//     }
-
-//     return availableSlots;
-//   }
-
-//   calculateEndTime(selectedTime: string, selectedHours: string): string {
-//     // Parse the selected time and duration
-//     const timeParts = selectedTime.split(':');
-//     const durationHours = parseInt(selectedHours, 10);
-
-//     if (timeParts.length !== 2 || isNaN(durationHours)) {
-//       console.error('Invalid time or duration');
-//       return '';
-//     }
-
-//     const startTime = new Date();
-//     startTime.setHours(
-//       parseInt(timeParts[0], 10),
-//       parseInt(timeParts[1], 10),
-//       0
-//     );
-
-//     // Calculate end time by adding duration
-//     const endTime = new Date(
-//       startTime.getTime() + durationHours * 60 * 60 * 1000
-//     );
-
-//     // Format end time back to a string
-//     const formattedEndTime =
-//       endTime.getHours().toString().padStart(2, '0') +
-//       ':' +
-//       endTime.getMinutes().toString().padStart(2, '0');
-
-//     return formattedEndTime;
-//   }
-// }
-
 import { Component } from '@angular/core';
 import { AuthService } from '../../shared/auth.service';
 import { HttpClient } from '@angular/common/http';
@@ -255,7 +5,8 @@ import { EvAdminProfile } from '../../model/ev-admin-profile';
 import { UserservicesService } from '../../UserDataService/userservices.service';
 import { UserProfile } from '../../model/user-profile';
 import { Bookingmodel } from '../../model/bookingmodel';
-import { Time } from '@angular/common';
+import { forkJoin } from 'rxjs';
+import { Route, Router } from '@angular/router';
 
 @Component({
   selector: 'app-searchevform',
@@ -269,16 +20,24 @@ export class SearchevformComponent {
   selectedDate: string;
   selectedTime: string;
   selectedHours: string;
-  evStationData: EvAdminProfile[];
+  evStationProfile: EvAdminProfile[];
   session: UserProfile;
   evBookingData: Bookingmodel[];
+  showModal: boolean = false;
+  timeSuggestion: {
+    station: EvAdminProfile;
+    suggestions: { start: string; end: string }[];
+    slot: string;
+    hours: string;
+  }[] = [];
 
   citiesapiData: any;
 
   constructor(
     private auth: AuthService,
     private http: HttpClient,
-    private userservice: UserservicesService
+    private userservice: UserservicesService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -289,19 +48,55 @@ export class SearchevformComponent {
       .get('https://mocki.io/v1/79c1cf35-6327-4ffc-9e38-16e5a9fba095')
       .subscribe(
         (data: any) => {
+          // Assign the received data to the variable
           this.citiesapiData = data;
+
+          // You can now use this.apiData in your component template or perform any other actions with the data
+          // console.log(data);
         },
         (error) => {
           console.error('Error fetching data:', error);
         }
       );
+
+    //call that get all booking data according
+    this.getData();
+  }
+  getData() {
+    this.userservice
+      .getEvAdminProfiles()
+      .subscribe((evAdminProfiles: EvAdminProfile[]) => {
+        this.evStationProfile = evAdminProfiles;
+      });
+
+    //call that get all ev station profile
+    this.userservice
+      .getAllBookingData()
+      .subscribe((bookindata: Bookingmodel[]) => {
+        this.evBookingData = bookindata;
+      });
   }
 
+  //get selected city and state
   onCityChange(event: any): void {
     this.selectedCityName = event.target.value;
     this.selectedCityState = this.getState(this.selectedCityName);
   }
 
+  onTimeChange() {
+    this.getData();
+  }
+
+  onDateChange() {
+    this.getData();
+  }
+  onHoursChange() {
+    this.getData();
+  }
+  onSlotChange() {
+    this.getData();
+  }
+  //get Selected state
   getState(cityName: string): string {
     const selectedCity = this.citiesapiData.find(
       (city: any) => city.name === cityName
@@ -310,29 +105,62 @@ export class SearchevformComponent {
   }
 
   onSearch(city: string, state: string) {
-    if (this.session) {
-      if (city && state) {
-        this.userservice
-          .getEvAdminProfileByLocation(city, state)
-          .subscribe((data: EvAdminProfile[]) => {
-            this.evStationData = data;
-            this.checkSlotAvailability();
-          });
-      } else {
-        alert('Select a location.');
-      }
-    } else {
-      alert('Please log in first.');
-    }
-  }
-
-  checkSlotAvailability() {
+    this.timeSuggestion = [];
     if (
       !this.selectedDate ||
       !this.selectedSlot ||
-      !this.selectedTime ||
-      !this.evStationData ||
-      !this.selectedHours
+      !this.selectedHours ||
+      !this.selectedTime
+    ) {
+      console.error('Missing required parameters.');
+      return;
+    }
+
+    const dayOfWeek = this.getDateOfWeek(this.selectedHours);
+
+    // Filter out objects from evStationProfile that match the provided city and state
+    this.evStationProfile = this.evStationProfile.filter(
+      (station) =>
+        station.location.city === city && station.location.state === state
+    );
+
+    console.log(this.evStationProfile);
+
+    // Filter booking data to show only bookings for the selected station and date
+    // Array to hold all filtered booking data for all station profiles
+    const filteredBookingData: Bookingmodel[] = [];
+
+    // Iterate over each station profile
+    this.evStationProfile.forEach((station) => {
+      // Filter booking data to show only bookings for the current station profile and selected date
+      const stationBookings = this.evBookingData.filter(
+        (booking) =>
+          booking.stationId === station.id &&
+          booking.bookedForDate === this.selectedDate &&
+          booking.bookingSlot === this.selectedSlot
+      );
+
+      // Concatenate stationBookings to filteredBookingData
+      filteredBookingData.push(...stationBookings);
+    });
+
+    // Assign filtered booking data to evBookingData
+    this.evBookingData = filteredBookingData;
+
+    console.log(this.evBookingData);
+    this.getBookingData();
+  }
+
+  getBookingData() {
+    const dayOfWeek = this.getDateOfWeek(this.selectedDate);
+
+    if (
+      !this.selectedDate ||
+      !this.selectedSlot ||
+      !this.evStationProfile ||
+      !this.selectedHours ||
+      !this.evBookingData ||
+      !this.selectedTime
     ) {
       console.error('Missing required parameters.');
       return;
@@ -343,53 +171,18 @@ export class SearchevformComponent {
       this.selectedDate + 'T' + this.selectedTime
     );
 
+    // Check if the selected date and time are in the past
     if (selectedDateTime < currentDate) {
       alert('Selected date or time is in the past.');
       console.error('Selected date or time is in the past.');
       return;
     }
 
-    const selectedDay = selectedDateTime.getDay(); // Get day of the week
-    const selectedDayOfWeek = this.getDayOfWeek(selectedDay); // Get day of the week in text format
-
-    this.evStationData.forEach((station: EvAdminProfile) => {
-      const stationId = station.id;
-      const dayTimings = station.evTimings[selectedDayOfWeek];
-
-      if (!dayTimings) {
-        console.error(
-          `No timing information available for ${stationId} on ${selectedDayOfWeek}.`
-        );
-        return;
-      }
-
-      const openingTime = new Date(dayTimings.openingTime.seconds * 1000);
-      const closingTime = new Date(dayTimings.closingTime.seconds * 1000);
-
-      const suggestedSlots: string[] = [];
-
-      let startTime = new Date(openingTime);
-      const endTime = new Date(closingTime);
-
-      while (startTime < endTime) {
-        const endTimeSlot = new Date(
-          startTime.getTime() + parseInt(this.selectedHours) * 60 * 60 * 1000
-        );
-        const endTimeString = this.formatTime(endTimeSlot);
-
-        suggestedSlots.push(this.formatTime(startTime) + '-' + endTimeString);
-        startTime = endTimeSlot;
-      }
-
-      console.log(
-        'Available slots for station ' + stationId + ':',
-        suggestedSlots
-      );
-    });
+    this.generateTimeSuggestions();
   }
 
-  getDayOfWeek(day: number): string {
-    const daysOfWeek = [
+  getDateOfWeek(dateString: string): string {
+    const days: string[] = [
       'Sunday',
       'Monday',
       'Tuesday',
@@ -398,12 +191,306 @@ export class SearchevformComponent {
       'Friday',
       'Saturday',
     ];
-    return daysOfWeek[day];
+    const date: Date = new Date(dateString);
+    const dayOfWeek: string = days[date.getDay()];
+    return dayOfWeek;
   }
 
-  formatTime(time: Date): string {
-    const hours = time.getHours().toString().padStart(2, '0');
-    const minutes = time.getMinutes().toString().padStart(2, '0');
-    return hours + ':' + minutes;
+  closeModal() {
+    this.showModal = false;
+  }
+
+  //This is first old
+  // generateTimeSuggestions() {
+  //   // Convert selectedHours to a number
+  //   const selectedHours = parseInt(this.selectedHours, 10);
+
+  //   this.evStationProfile.forEach((station) => {
+  //     // Get the opening and closing times for the selected day
+  //     const dayOfWeek = this.getDateOfWeek(this.selectedDate);
+  //     const openingTime = station.evTimings[dayOfWeek].openingTime;
+  //     const closingTime = station.evTimings[dayOfWeek].closingTime;
+
+  //     // Calculate the opening and closing DateTime based on the selected date
+  //     const openingDateTime = new Date(this.selectedDate);
+  //     openingDateTime.setHours(openingTime.hours, openingTime.minutes, 0, 0);
+
+  //     const closingDateTime = new Date(this.selectedDate);
+  //     closingDateTime.setHours(closingTime.hours, closingTime.minutes, 0, 0);
+
+  //     // Filter the booking data for the current station
+  //     const stationBookings = this.evBookingData.filter(
+  //       (booking) => booking.stationId === station.id
+  //     );
+
+  //     // Generate suggestions for empty slots based on selected hours and filtered bookings
+  //     const suggestions = [];
+  //     let currentSlotStart = new Date(openingDateTime.getTime());
+
+  //     while (currentSlotStart < closingDateTime) {
+  //       // Calculate the end time of the current slot
+  //       const currentSlotEnd = new Date(currentSlotStart.getTime());
+  //       currentSlotEnd.setHours(currentSlotEnd.getHours() + selectedHours);
+
+  //       // Check if the current slot overlaps with any existing bookings for this station
+  //       const overlappingBooking = stationBookings.some((booking) => {
+  //         const bookingStart = new Date(
+  //           booking.bookedForDate + 'T' + booking.timeForBooked
+  //         );
+  //         const bookingEnd = new Date(bookingStart.getTime());
+  //         bookingEnd.setHours(
+  //           bookingEnd.getHours() + parseInt(booking.totalHoursEvBooking, 10)
+  //         );
+
+  //         return (
+  //           (currentSlotStart >= bookingStart &&
+  //             currentSlotStart < bookingEnd) ||
+  //           (currentSlotEnd > bookingStart && currentSlotEnd <= bookingEnd) ||
+  //           (currentSlotStart <= bookingStart && currentSlotEnd >= bookingEnd)
+  //         );
+  //       });
+
+  //       // If the current slot is not booked, add it to suggestions
+  //       if (!overlappingBooking) {
+  //         suggestions.push({
+  //           start: currentSlotStart.toLocaleTimeString([], {
+  //             hour: '2-digit',
+  //             minute: '2-digit',
+  //           }),
+  //           end: currentSlotEnd.toLocaleTimeString([], {
+  //             hour: '2-digit',
+  //             minute: '2-digit',
+  //           }),
+  //         });
+  //       }
+
+  //       // Move to the next slot
+  //       currentSlotStart.setHours(currentSlotStart.getHours() + selectedHours);
+  //     }
+
+  //     // Push the station profile and suggestions to timeSuggestion array
+  //     this.timeSuggestion.push({
+  //       station: station,
+  //       suggestions: suggestions,
+  //     });
+  //   });
+
+  //   this.showModal = true;
+  // }
+
+  // This is second latest
+  // generateTimeSuggestions() {
+  //   // Convert selectedHours to a number
+  //   const selectedHours = parseInt(this.selectedHours, 10);
+
+  //   this.evStationProfile.forEach((station) => {
+  //     // Get the opening and closing times for the selected day
+  //     const dayOfWeek = this.getDateOfWeek(this.selectedDate);
+  //     const openingTime = station.evTimings[dayOfWeek].openingTime;
+  //     const closingTime = station.evTimings[dayOfWeek].closingTime;
+
+  //     // Calculate the opening and closing DateTime based on the selected date
+  //     const openingDateTime = new Date(this.selectedDate);
+  //     openingDateTime.setHours(openingTime.hours, openingTime.minutes, 0, 0);
+
+  //     const closingDateTime = new Date(this.selectedDate);
+  //     closingDateTime.setHours(closingTime.hours, closingTime.minutes, 0, 0);
+
+  //     // Filter the booking data for the current station
+  //     const stationBookings = this.evBookingData.filter(
+  //       (booking) => booking.stationId === station.id
+  //     );
+
+  //     // Generate suggestions for empty slots based on selected hours and filtered bookings
+  //     const suggestions = [];
+  //     let currentSlotStart = new Date(openingDateTime.getTime());
+
+  //     while (currentSlotStart < closingDateTime) {
+  //       // Calculate the end time of the current slot
+  //       const currentSlotEnd = new Date(currentSlotStart.getTime());
+  //       currentSlotEnd.setHours(currentSlotEnd.getHours() + selectedHours);
+
+  //       // If the end time exceeds the closing time, break out of the loop
+  //       if (currentSlotEnd > closingDateTime) {
+  //         break;
+  //       }
+
+  //       // Check if the current slot overlaps with any existing bookings for this station
+  //       const overlappingBooking = stationBookings.some((booking) => {
+  //         const bookingStart = new Date(
+  //           booking.bookedForDate + 'T' + booking.timeForBooked
+  //         );
+  //         const bookingEnd = new Date(bookingStart.getTime());
+  //         bookingEnd.setHours(
+  //           bookingEnd.getHours() + parseInt(booking.totalHoursEvBooking, 10)
+  //         );
+
+  //         return (
+  //           (currentSlotStart >= bookingStart &&
+  //             currentSlotStart < bookingEnd) ||
+  //           (currentSlotEnd > bookingStart && currentSlotEnd <= bookingEnd) ||
+  //           (currentSlotStart <= bookingStart && currentSlotEnd >= bookingEnd)
+  //         );
+  //       });
+
+  //       // If the current slot is not booked, add it to suggestions
+  //       if (!overlappingBooking) {
+  //         suggestions.push({
+  //           start: currentSlotStart.toLocaleTimeString([], {
+  //             hour: '2-digit',
+  //             minute: '2-digit',
+  //           }),
+  //           end: currentSlotEnd.toLocaleTimeString([], {
+  //             hour: '2-digit',
+  //             minute: '2-digit',
+  //           }),
+  //         });
+  //       }
+
+  //       // Move to the next slot
+  //       currentSlotStart.setHours(currentSlotStart.getHours() + selectedHours);
+  //     }
+
+  //     // Push the station profile and suggestions to timeSuggestion array
+  //     this.timeSuggestion.push({
+  //       station: station,
+  //       suggestions: suggestions,
+  //       slot: this.selectedSlot,
+  //       hours: this.selectedHours,
+  //     });
+  //   });
+
+  //   this.showModal = true; // You may want to move this outside the forEach loop if it should be triggered only once
+  // }
+
+  generateTimeSuggestions() {
+    // Convert selectedHours to a number
+    const selectedHours = parseInt(this.selectedHours, 10);
+
+    this.evStationProfile.forEach((station) => {
+      // Get the opening and closing times for the selected day
+      const dayOfWeek = this.getDateOfWeek(this.selectedDate);
+      const openingTime = station.evTimings[dayOfWeek].openingTime;
+      const closingTime = station.evTimings[dayOfWeek].closingTime;
+
+      // Calculate the opening and closing DateTime based on the selected date
+      const openingDateTime = new Date(this.selectedDate);
+      openingDateTime.setHours(openingTime.hours, openingTime.minutes, 0, 0);
+
+      const closingDateTime = new Date(this.selectedDate);
+      closingDateTime.setHours(closingTime.hours, closingTime.minutes, 0, 0);
+
+      // Filter the booking data for the current station
+      const stationBookings = this.evBookingData.filter(
+        (booking) => booking.stationId === station.id
+      );
+
+      // Determine the starting time for generating suggestions
+      let currentSlotStart = new Date();
+      const currentDate = new Date();
+
+      // If the selected date is the current date, check if the current time is later than the opening time
+      if (currentDate.toDateString() === openingDateTime.toDateString()) {
+        const openingDateTimeWithCurrentDate = new Date(currentDate);
+        openingDateTimeWithCurrentDate.setHours(
+          openingTime.hours,
+          openingTime.minutes,
+          0,
+          0
+        );
+
+        // If the current time is later than the opening time, use the current time as the starting point
+        if (currentDate >= openingDateTimeWithCurrentDate) {
+          currentSlotStart = new Date(currentDate);
+        } else {
+          currentSlotStart = new Date(openingDateTimeWithCurrentDate.getTime());
+        }
+      } else {
+        // Use regular opening time as the starting point
+        currentSlotStart = new Date(openingDateTime.getTime());
+      }
+
+      // Generate suggestions for empty slots based on selected hours and filtered bookings
+      const suggestions = [];
+
+      while (currentSlotStart < closingDateTime) {
+        // Calculate the end time of the current slot
+        const currentSlotEnd = new Date(currentSlotStart.getTime());
+        currentSlotEnd.setHours(currentSlotEnd.getHours() + selectedHours);
+
+        // If the end time exceeds the closing time, break out of the loop
+        if (currentSlotEnd > closingDateTime) {
+          break;
+        }
+
+        // Check if the current slot overlaps with any existing bookings for this station
+        const overlappingBooking = stationBookings.some((booking) => {
+          const bookingStart = new Date(
+            booking.bookedForDate + 'T' + booking.timeForBooked
+          );
+          const bookingEnd = new Date(bookingStart.getTime());
+          bookingEnd.setHours(
+            bookingEnd.getHours() + parseInt(booking.totalHoursEvBooking, 10)
+          );
+
+          return (
+            (currentSlotStart >= bookingStart &&
+              currentSlotStart < bookingEnd) ||
+            (currentSlotEnd > bookingStart && currentSlotEnd <= bookingEnd) ||
+            (currentSlotStart <= bookingStart && currentSlotEnd >= bookingEnd)
+          );
+        });
+
+        // If the current slot is not booked, add it to suggestions
+        if (!overlappingBooking) {
+          suggestions.push({
+            start: currentSlotStart.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            end: currentSlotEnd.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+          });
+        }
+
+        // Move to the next slot
+        currentSlotStart.setHours(currentSlotStart.getHours() + selectedHours);
+      }
+
+      // Push the station profile and suggestions to timeSuggestion array
+      this.timeSuggestion.push({
+        station: station,
+        suggestions: suggestions,
+        slot: this.selectedSlot,
+        hours: this.selectedHours,
+      });
+    });
+
+    this.showModal = true; // You may want to move this outside the forEach loop if it should be triggered only once
+  }
+
+  selectedSlotByUser(
+    startTime: string,
+    endTime: string,
+    stationId: string,
+    slot: string,
+    hours: string,
+    date: string
+  ) {
+    // Implement your logic here to handle the selected slot
+    console.log(
+      `Selected slot: ${startTime} - ${endTime}, Station ID: ${stationId}`
+    );
+    // Example: Navigate to the details page with the selected slot and station ID
+    this.router.navigate(['/evstation', stationId], {
+      queryParams: {
+        timing: `${startTime}`,
+        slot: slot,
+        hours: hours,
+        date: date,
+      },
+    });
   }
 }

@@ -294,4 +294,13 @@ export class UserservicesService {
       .collection<EvAdminProfile>('Evstation', query)
       .valueChanges();
   }
+
+  //get all booking data status is not visited
+  getAllBookingData(): Observable<Bookingmodel[]> {
+    return this.firestore
+      .collection<Bookingmodel>('EvBookingData', (ref) =>
+        ref.where('visitingStatus', '==', 'not visited')
+      )
+      .valueChanges();
+  }
 }

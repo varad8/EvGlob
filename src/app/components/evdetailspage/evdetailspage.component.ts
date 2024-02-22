@@ -207,6 +207,25 @@ export class EvdetailspageComponent {
     this.stationid = this.route.snapshot.paramMap.get('stationid');
     this.populateMarkers();
 
+    //Get the query params
+    // Retrieve query parameters and log them
+    this.route.queryParams.subscribe((params) => {
+      const timing = params['timing'];
+      const slot = params['slot'];
+      const hours = params['hours'];
+      const date = params['date'];
+
+      console.log(typeof this.selectedTime);
+
+      this.selectedSlot = slot;
+      this.selectedTime = this.timeFormat(timing);
+      console.log('Formated Timing:', this.selectedTime);
+      this.selectedDate = date;
+      this.selectedDuration = hours;
+
+      console.log('Query parameters:', timing, slot, hours, date);
+    });
+
     // Call the method to fetch EV Stations
     this.evdata.getEvAdminDataByUserId(this.stationid).subscribe(
       (profiles: EvAdminProfile[]) => {
@@ -749,5 +768,28 @@ export class EvdetailspageComponent {
     }
     // Perform the arithmetic operation
     return this.selecteddata.rate * durationNumeric;
+  }
+
+  // Function to format time to HH:mm format
+  private timeFormat(timeString: string): string {
+    // Split the time string into hours, minutes, and AM/PM
+    const timeParts = timeString.split(':');
+    let hours = parseInt(timeParts[0], 10);
+    const minutes = parseInt(timeParts[1].split(' ')[0], 10);
+    const period = timeParts[1].split(' ')[1];
+
+    // Adjust hours based on AM/PM
+    if (period === 'AM' && hours === 12) {
+      hours = 0;
+    } else if (period === 'PM' && hours < 12) {
+      hours += 12;
+    }
+
+    // Format hours and minutes to HH:mm format
+    const formattedHours = hours.toString().padStart(2, '0');
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+
+    // Return formatted time
+    return `${formattedHours}:${formattedMinutes}`;
   }
 }
