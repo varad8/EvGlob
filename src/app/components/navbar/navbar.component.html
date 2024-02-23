@@ -70,8 +70,15 @@
         </li>
         <li><a class="desktop-li" routerLink="/contact">Contact</a></li>
     </ul>
-    <a class="signin-btn-desktop" routerLink="/login/user">Sign In</a>
-    <a class="signup-btn-desktop" routerLink="/register/user">Sign up</a>
+
+
+    <a *ngIf="!session" class="signin-btn-desktop" routerLink="/login/user">Sign In</a>
+    <a *ngIf="!session" class="signup-btn-desktop" routerLink="/register/user">Sign up</a>
+
+
+    <a *ngIf="session" class="signup-btn-desktop ml-203" routerLink="/user">Dashboard</a>
+
+
 
     <button class=" hidden lg:inline-block lg:ml-3" (click)="darkMode.set(!darkMode())">
         <!-- Moon Svg -->
@@ -131,9 +138,12 @@
             </ul>
         </div>
         <div class="mt-auto">
-            <div class="pt-6">
+            <div class="pt-6" *ngIf="!session">
                 <a class="sign-in-btn" routerLink="/login/user">Sign in</a>
                 <a class="sign-up-btn" routerLink="/register/user">Sign Up</a>
+            </div>
+            <div class="pt-6" *ngIf="session">
+                <a class="sign-in-btn" routerLink="/user">Dashboard</a>
             </div>
             <p class="my-4 text-xs text-center text-gray-400">
                 <span>Copyright © 2021</span>

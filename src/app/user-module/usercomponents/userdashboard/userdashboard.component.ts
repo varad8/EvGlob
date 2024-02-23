@@ -62,7 +62,7 @@ export class UserdashboardComponent {
   }
 
   logOut() {
-    this.authService.logOutAdmin();
+    this.authService.logOutUser();
   }
 
   ngOnInit() {

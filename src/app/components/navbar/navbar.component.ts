@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { UserProfile } from '../../model/user-profile';
+import { AuthService } from '../../shared/auth.service';
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
@@ -15,6 +17,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 })
 export class NavbarComponent {
   darkMode = signal<boolean>(false);
+  session: UserProfile;
 
   @HostBinding('class.dark') get mode() {
     return this.darkMode();
@@ -26,7 +29,8 @@ export class NavbarComponent {
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private renderer: Renderer2,
-    private breakpointObserver: BreakpointObserver
+    private breakpointObserver: BreakpointObserver,
+    private auth: AuthService
   ) {
     const localStorage = this.document.defaultView?.localStorage;
 
@@ -72,5 +76,10 @@ export class NavbarComponent {
         // Use isMobileDevice boolean as needed, without modifying body class
         console.log('Is Mobile Device:', this.isMobileDevice);
       });
+  }
+
+  ngOnInit(): void {
+    // Check for an existing session when the component is initialized
+    this.session = this.auth.getWebUserSession();
   }
 }
