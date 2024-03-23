@@ -9,8 +9,9 @@ import {
   effect,
   signal,
 } from '@angular/core';
-import { UserProfile } from '../../../model/user-profile';
+
 import { AuthService } from '../../../shared/auth.service';
+import { environment } from '../../../../environments/environment.development';
 
 @Component({
   selector: 'app-userdashboard',
@@ -18,7 +19,8 @@ import { AuthService } from '../../../shared/auth.service';
   styleUrl: './userdashboard.component.css',
 })
 export class UserdashboardComponent {
-  userProfile: UserProfile | undefined;
+  private baseUrl = environment.BASE_URL;
+  userProfile: any;
   isMobile: boolean = false;
   isSidebarOpen: boolean = false;
 
@@ -66,17 +68,17 @@ export class UserdashboardComponent {
   }
 
   ngOnInit() {
-    //Fetch session according that id fetch user profile
     const sessionUser = this.authService.getWebUserSession();
     if (sessionUser?.accountType === 'user') {
-      this.authService
-        .getUserProfileUsingID(sessionUser.userid)
-        .then((Profile) => {
-          if (Profile) {
-            this.userProfile = Profile;
-          }
-        });
-    } else {
+      this.authService.getUserProfileUsingID(sessionUser.userid).subscribe(
+        (data) => {
+          this.userProfile = data.profile;
+        },
+        (error) => {
+          console.error('Error fetching user data:', error);
+          // Handle error
+        }
+      );
     }
   }
 
@@ -109,5 +111,10 @@ export class UserdashboardComponent {
     if (this.isMobile) {
       this.isSidebarOpen = false;
     }
+  }
+
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/user/image/${filename}`;
   }
 }

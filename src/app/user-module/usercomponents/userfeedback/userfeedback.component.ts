@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../../shared/auth.service';
 import { UserservicesService } from '../../../UserDataService/userservices.service';
-import { Ratingmodel } from '../../../model/ratingmodel';
-import { UserProfile } from '../../../model/user-profile';
 
 @Component({
   selector: 'app-userfeedback',
@@ -10,13 +8,13 @@ import { UserProfile } from '../../../model/user-profile';
   styleUrls: ['./userfeedback.component.css'],
 })
 export class UserfeedbackComponent {
-  ratingData: Ratingmodel[] = [];
-  session: UserProfile;
-  filterRatings: Ratingmodel[] = [];
+  ratingData: any;
+  session: any;
+  filterRatings: any;
   searchTerm: string = '';
   showModal: boolean = false;
   feedbackMsg: string = '';
-  selectedRating: Ratingmodel;
+  selectedRating: any;
 
   constructor(
     private auth: AuthService,
@@ -26,13 +24,17 @@ export class UserfeedbackComponent {
   ngOnInit() {
     this.session = this.auth.getWebUserSession();
 
-    this.userservice.getRatingsByUserId(this.session.id).subscribe(
-      (ratings: Ratingmodel[]) => {
-        this.ratingData = ratings;
-        this.filterRatings = ratings; // Initialize filterRatings with all ratings
+    this.userservice.getAllRatingsByUserid(this.session.userid).subscribe(
+      (response: any) => {
+        if (response.ratings) {
+          this.ratingData = response.ratings;
+          this.filterRatings = response.ratings;
+
+          console.log('Rating data:', this.ratingData, this.filledStars);
+        }
       },
       (error) => {
-        console.error('Error fetching ratings:', error);
+        console.error('Error fetching rating data:', error);
       }
     );
   }
@@ -62,28 +64,27 @@ export class UserfeedbackComponent {
   }
 
   // Function to toggle the modal visibility
-  toggleModal(ratingdata: Ratingmodel) {
+  toggleModal(ratingdata: any) {
     this.selectedRating = ratingdata;
     this.showModal = !this.showModal;
 
     // Call the method to get rating data for the selected booking
 
-    this.userservice
-      .getRatingByUserIdAndStationId(
-        this.selectedRating.userId,
-        this.selectedRating.stationId
-      )
-      .subscribe((ratingData: Ratingmodel[]) => {
-        // Handle the rating data here, such as displaying it in the modal
-        console.log('Rating data:', ratingData[0]);
-        if (ratingData.length > 0) {
-          this.filledStars = ratingData[0].rating;
+    this.userservice.getRatingByOrderId(this.selectedRating.orderid).subscribe(
+      (response) => {
+        console.log('Rating data:', response.rating);
+        if (response.rating) {
+          this.filledStars = response.rating.rating;
         } else {
-          this.filledStars = 0; // If no rating data found, set filledStars to 0
+          this.filledStars = 0;
         }
-        this.feedbackMsg = ratingData[0]?.feedbackMsg || ''; // Set feedback message
+        this.feedbackMsg = response.rating.feedbackMsg || '';
         this.updateStars();
-      });
+      },
+      (error) => {
+        console.error('Error fetching rating data:', error);
+      }
+    );
   }
 
   toggleClose() {
@@ -124,29 +125,28 @@ export class UserfeedbackComponent {
     });
   }
 
-  rateNow(ratingsdata: Ratingmodel): void {
+  rateNow(ratingsdata: any): void {
     // Create a Ratingmodel object with the necessary data
-    const ratingData: Ratingmodel = {
-      docid: '',
+    const ratingData = {
+      ratingId: ratingsdata.ratingId,
       stationId: ratingsdata.stationId,
       userId: ratingsdata.userId,
       rating: this.filledStars,
       feedbackMsg: this.feedbackMsg,
+      orderId: ratingsdata.orderid,
     };
 
-    // Call the saveOrUpdateRating method with the ratingData
-    this.userservice
-      .saveOrUpdateRating(ratingData)
-      .then(() => {
-        this.filledStars = 0;
-        this.updateStars();
-        this.feedbackMsg = '';
-        this.selectedRating = undefined;
-        this.showModal = false;
-        alert('Rating saved successfully!');
-      })
-      .catch((error) => {
-        alert('Error saving rating: ' + error);
-      });
+    // If ratingId exists, call updateRating
+    this.userservice.updateRating(ratingData).subscribe(
+      (response) => {
+        this.toggleClose();
+        alert(response.message);
+        console.log('Rating updated successfully:', response);
+      },
+      (error) => {
+        alert(error.error.error);
+        console.error('Error updating rating:', error);
+      }
+    );
   }
 }

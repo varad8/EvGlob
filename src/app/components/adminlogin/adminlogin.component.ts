@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../shared/auth.service';
+import { SessionStorageService } from 'ngx-webstorage';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-adminlogin',
@@ -10,24 +12,27 @@ export class AdminloginComponent {
   email: string = '';
   password: string = '';
 
-  constructor(private auth: AuthService) {}
-  adminLogin() {
-    if (this.email == '') {
-      alert('Please enter email');
-      return;
-    }
-    if (this.password == '') {
-      alert('Please enter password');
-      return;
-    }
-    if (this.password.length < 6) {
-      alert('Password at least six character long');
-      return;
-    }
+  constructor(
+    private auth: AuthService,
+    private sst: SessionStorageService,
+    private router: Router
+  ) {}
 
-    this.auth.adminLogin(this.email, this.password);
-    this.email = '';
-    this.password = '';
+  adminLogin(): void {
+    this.auth.adminLogin(this.email, this.password).subscribe(
+      (response) => {
+        console.log('Registration successful', response);
+        alert(response.message);
+        // Save user information in session storage
+        this.sst.store('admin', response.profile);
+        // // Navigate to the dashboard
+        this.router.navigate(['/sadmin']);
+      },
+      (error) => {
+        console.error('Registration failed', error.error);
+        alert(error.error.error);
+      }
+    );
   }
 
   ngOnInit(): void {

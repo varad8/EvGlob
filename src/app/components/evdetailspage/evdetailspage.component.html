@@ -3,7 +3,8 @@
     <div *ngIf="station" class="flex flex-wrap px-3 pt-10 pb-20">
         <!-- First Row -->
         <div class="w-full md:w-1/2 p-4">
-            <img [src]="station.imageUrl" alt="Station Image" class="w-full mb-4 dark:drop-shadow-lg rounded-md" />
+            <img [src]="getProfileImageUrl(station.imageUrl)" alt="Station Image"
+                class="w-full object-contain  mb-4 dark:drop-shadow-lg rounded-md h-[300px]" />
         </div>
         <div class="w-full md:w-1/2 p-4">
             <h2 class="text-4xl font-bold mb-2 dark:text-green-500">{{ station.title }}</h2>
@@ -14,25 +15,32 @@
             <p class="text-gray-700 dark:text-gray-200 text-2xl py-2"><span class="font-bold">Rs.</span> {{
                 station.rate }} / <span class="text-sm">per hour</span>
             </p>
+            <div class="flex gap-2 items-center text-[20px]">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    class="w-6 h-6 text-orange-500" version="1.1" id="Capa_1" viewBox="0 0 47.94 47.94"
+                    xml:space="preserve">
+                    <path style="fill:#ff9100;"
+                        d="M26.285,2.486l5.407,10.956c0.376,0.762,1.103,1.29,1.944,1.412l12.091,1.757  c2.118,0.308,2.963,2.91,1.431,4.403l-8.749,8.528c-0.608,0.593-0.886,1.448-0.742,2.285l2.065,12.042  c0.362,2.109-1.852,3.717-3.746,2.722l-10.814-5.685c-0.752-0.395-1.651-0.395-2.403,0l-10.814,5.685  c-1.894,0.996-4.108-0.613-3.746-2.722l2.065-12.042c0.144-0.837-0.134-1.692-0.742-2.285l-8.749-8.528  c-1.532-1.494-0.687-4.096,1.431-4.403l12.091-1.757c0.841-0.122,1.568-0.65,1.944-1.412l5.407-10.956  C22.602,0.567,25.338,0.567,26.285,2.486z" />
+                </svg>
+                <p>{{station.averageRating}}</p>
+            </div>
             <div class="flex gap-3 mt-5">
                 <button [disabled]="openBookingModal" (click)="bookSlot(station)"
                     class="text-white bg-green-500 px-6 py-3 rounded-full shadow-md dark:shadow-green-500 dark:drop-shadow-lg">Book
                     Now</button>
-                <button (click)="callNow()"
+                <a href="tel:{{station.profile.mobile}}"
                     class="text-white bg-sky-500 px-6 py-3 rounded-full shadow-md dark:shadow-sky-500 dark:drop-shadow-lg">Call
-                </button>
+                </a>
             </div>
         </div>
 
         <!-- Second Row -->
         <div class="w-full md:w-1/2 p-4">
-            <google-map width="100%" height="400" [center]="center" [zoom]="zoom">
+            <google-map width="100%" height="400" [center]="center" [zoom]="zoom" *ngIf="markerPositions">
                 <map-marker #marker="mapMarker" *ngFor="let markerPosition of markerPositions"
                     [position]="markerPosition"></map-marker>
                 <map-info-window>{{station.title}}</map-info-window>
             </google-map>
-
-
         </div>
 
         <div class="w-full md:w-1/2 p-4">
@@ -65,7 +73,6 @@
         </div>
 
     </div>
-
 
     <!-- Booking Modal -->
     <div class="fixed z-10 inset-0 overflow-y-auto" *ngIf="openBookingModal">
@@ -128,7 +135,8 @@
 
                             <!-- Charging Duration -->
                             <div class="col-span-6 sm:col-span-3">
-                                <label for="duration" class="block text-sm font-medium text-gray-700">Charging Duration
+                                <label for="duration" class="block text-sm font-medium text-gray-700">Charging
+                                    Duration
                                     (hours)</label>
 
                                 <select id="duration" name="duration" [(ngModel)]="selectedDuration"
@@ -163,160 +171,61 @@
 
 
 
-    <!-- Payment Modal -->
-    <div *ngIf="isModalOpen"
-        class="flex items-center justify-center min-h-screen p-4 fixed inset-0 bg-black bg-opacity-50 z-50">
-        <!-- Modal Content -->
-        <div class="bg-white drop-shadow-2 rounded-lg shadow-lg p-6 max-w-md w-full sm:max-w-lg">
-            <!-- Close Button -->
-            <button class="absolute top-4 right-4 text-gray-500 focus:outline-none" (click)="closePaymentModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" class="w-5 h-5" viewBox="0 0 30 30">
-                    <path
-                        d="M 7 4 C 6.744125 4 6.4879687 4.0974687 6.2929688 4.2929688 L 4.2929688 6.2929688 C 3.9019687 6.6839688 3.9019687 7.3170313 4.2929688 7.7070312 L 11.585938 15 L 4.2929688 22.292969 C 3.9019687 22.683969 3.9019687 23.317031 4.2929688 23.707031 L 6.2929688 25.707031 C 6.6839688 26.098031 7.3170313 26.098031 7.7070312 25.707031 L 15 18.414062 L 22.292969 25.707031 C 22.682969 26.098031 23.317031 26.098031 23.707031 25.707031 L 25.707031 23.707031 C 26.098031 23.316031 26.098031 22.682969 25.707031 22.292969 L 18.414062 15 L 25.707031 7.7070312 C 26.098031 7.3170312 26.098031 6.6829688 25.707031 6.2929688 L 23.707031 4.2929688 C 23.316031 3.9019687 22.682969 3.9019687 22.292969 4.2929688 L 15 11.585938 L 7.7070312 4.2929688 C 7.5115312 4.0974687 7.255875 4 7 4 z">
-                    </path>
-                </svg>
-            </button>
-            <!-- Modal Content Goes Here -->
-            <div>
+    <h3 class="text-2xl leading-6 pb-5 text-gray-800 text-center px-4 dark:text-green-600 font-extrabold">Ratings
+    </h3>
+    <div class="container mx-auto pt-10 pb-10 px-10" *ngIf="ratingdata !== null && ratingdata !== undefined">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div *ngFor="let rating of paginatedTestimonials"
+                class="bg-white shadow-lg border border-gray-300 rounded-lg p-4">
 
-                <!-- PayUsing Debit Card -->
-                <h4 class="text-center mt-2 mb-3 text-xl">Pay using <span
-                        class="text-green-600 font-bold text-2xl">Debit
-                        Card</span></h4>
+                <!-- Feedback message -->
+                <div class="text-gray-700 mb-2 break-words">{{ rating?.feedbackMsg }}</div>
 
-                <hr class="w-full mb-5" />
-
-                <!-- Crad Information -->
-                <label class="text-gray-700">Card Information</label>
-                <div class="border-2 shadow border-gray-300 rounded-md mb-4 mt-2">
-                    <div class="flex border-b border-gray-300 justify-between items-center">
-                        <input type="text" class="focus:outline-none w-full  px-3 py-2" [(ngModel)]="enteredCardNumber"
-                            (input)="onCardNumberInput()" maxlength="19"
-                            [ngClass]="{ 'text-black': isCardNumberValid, 'text-red-500': !isCardNumberValid }"
-                            placeholder="Card number" pattern="[0-9]*" />
-                        <img class="w-6 h-6 mr-3" [src]="getCardImage()" alt="card icon" />
-                    </div>
-                    <div class="flex justify-between">
-                        <div class="flex items-center border-r border-gray-300">
-                            <input class="focus:outline-none w-full  px-3 py-2" placeholder="MM/YY"
-                                [(ngModel)]="enteredExp" (input)="onMonthYearInput($event)" maxlength="5"
-                                [ngClass]="{ 'text-black': isMonthYearValid, 'text-red-500': !isMonthYearValid }" />
-                        </div>
-                        <div class="flex items-center">
-                            <input type="number" maxlength="3" [(ngModel)]="enteredCvv" (input)="OnCvvInput()"
-                                class="focus:outline-none w-full px-3 py-2" placeholder="CVC"
-                                [ngClass]="{ 'text-black': isCVCValid, 'text-red-500': !isCVCValid }" />
-                            <img class="w-6 h-6 mr-3" src="../../../assets/cardcvv.png" alt="card icon" />
-                        </div>
-                    </div>
-
+                <!-- Rating  -->
+                <div class="flex gap-1">
+                    <span *ngFor="let star of getStars(rating.rating)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path
+                                d="M10 1l2.821 5.468 6.088.887-4.396 4.284.988 6.081L10 15.126l-5.501 2.582.987-6.081-4.396-4.284 6.088-.887z" />
+                        </svg>
+                    </span>
+                    <p>{{ rating?.rating }}/5</p>
                 </div>
 
-
-                <!-- Country/Region -->
-
-                <label class="text-gray-700">Country or region</label>
-                <div class="border-2 shadow border-gray-300 rounded-md mb-4 mt-2">
-                    <div class="flex border-b border-gray-300 justify-between items-center">
-                        <select class="focus:outline-none w-full  px-3 py-2" (change)="onCountrySelected($event)">
-                            <option defaultSelected value="">Select country</option>
-                            <option *ngFor="let country of countries" [value]="country.code">
-                                {{ country.country }}
-                            </option>
-                        </select>
-                        <img *ngIf="selectedCountry.flag" class="w-6 h-6 mr-3" [src]="selectedCountry.flag"
-                            alt="flag" />
-                    </div>
-
-                    <div class="flex border-b border-gray-300 justify-between items-center">
-                        <input type="number" class="focus:outline-none w-full  px-3 py-2" placeholder="Zip Code" />
+                <!-- User details -->
+                <div class="text-gray-500">
+                    <div class="flex items-center gap-3">
+                        <img [src]="getProfileImageUrl(rating?.profileDetails?.profilepic)"
+                            class="w-10 h-10 rounded-full border border-gray-300" />
+                        <p>{{ rating?.profileDetails?.firstname }} {{ rating?.profileDetails?.lastname }}</p>
                     </div>
                 </div>
 
 
-                <!-- Pay Button with Amount -->
-                <div class="flex items-end justify-center">
-                    <button [disabled]="!isCardNumberValid || !isCVCValid || !isMonthYearValid || isLoading"
-                        (click)="payAmount()"
-                        [ngClass]="{'bg-sky-800': !paymentSuccess, 'bg-green-500': paymentSuccess}"
-                        class="w-full py-3 ml-3 mr-3 rounded-md text-white mt-5">
-                        <ng-container *ngIf="!isLoading && !paymentSuccess; else loadingTemplate">
-                            Pay (₹ {{calculateTotalAmount}})
-                        </ng-container>
-                        <ng-template #loadingTemplate>
-                            <span class="flex items-center justify-center gap-2 text-white" *ngIf="!paymentSuccess">
-                                Processing...
-                                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 50 50"
-                                    class="animate-spin h-6 w-6">
-                                    <path
-                                        d="M 25 5 C 13.964844 5 5 13.964844 5 25 C 4.996094 25.359375 5.183594 25.695313 5.496094 25.878906 C 5.808594 26.058594 6.191406 26.058594 6.503906 25.878906 C 6.816406 25.695313 7.003906 25.359375 7 25 C 7 15.046875 15.046875 7 25 7 C 31.246094 7 36.726563 10.179688 39.957031 15 L 33 15 C 32.640625 14.996094 32.304688 15.183594 32.121094 15.496094 C 31.941406 15.808594 31.941406 16.191406 32.121094 16.503906 C 32.304688 16.816406 32.640625 17.003906 33 17 L 43 17 L 43 7 C 43.003906 6.730469 42.898438 6.46875 42.707031 6.277344 C 42.515625 6.085938 42.253906 5.980469 41.984375 5.984375 C 41.433594 5.996094 40.992188 6.449219 41 7 L 41 13.011719 C 37.347656 8.148438 31.539063 5 25 5 Z M 43.984375 23.984375 C 43.433594 23.996094 42.992188 24.449219 43 25 C 43 34.953125 34.953125 43 25 43 C 18.753906 43 13.269531 39.820313 10.042969 35 L 17 35 C 17.359375 35.007813 17.695313 34.816406 17.878906 34.507813 C 18.058594 34.195313 18.058594 33.808594 17.878906 33.496094 C 17.695313 33.1875 17.359375 32.996094 17 33 L 8.445313 33 C 8.316406 32.976563 8.1875 32.976563 8.058594 33 L 7 33 L 7 43 C 6.996094 43.359375 7.183594 43.695313 7.496094 43.878906 C 7.808594 44.058594 8.191406 44.058594 8.503906 43.878906 C 8.816406 43.695313 9.003906 43.359375 9 43 L 9 36.984375 C 12.648438 41.847656 18.460938 45 25 45 C 36.035156 45 45 36.035156 45 25 C 45.003906 24.730469 44.898438 24.46875 44.707031 24.277344 C 44.515625 24.085938 44.253906 23.980469 43.984375 23.984375 Z">
-                                    </path>
-                                </svg>
-                            </span>
-                        </ng-template>
-                        <ng-container *ngIf="paymentSuccess">
-                            <span class="flex justify-center items-center gap-2">Payment Successful
-                                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 48 48"
-                                    class="h-6 w-6 fill-current">
-                                    <linearGradient id="I9GV0SozQFknxHSR6DCx5a_70yRC8npwT3d_gr1" x1="9.858" x2="38.142"
-                                        y1="9.858" y2="38.142" gradientUnits="userSpaceOnUse">
-                                        <stop offset="0" stop-color="#21ad64"></stop>
-                                        <stop offset="1" stop-color="#088242"></stop>
-                                    </linearGradient>
-                                    <path fill="url(#I9GV0SozQFknxHSR6DCx5a_70yRC8npwT3d_gr1)"
-                                        d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z">
-                                    </path>
-                                    <path
-                                        d="M32.172,16.172L22,26.344l-5.172-5.172c-0.781-0.781-2.047-0.781-2.828,0l-1.414,1.414	c-0.781,0.781-0.781,2.047,0,2.828l8,8c0.781,0.781,2.047,0.781,2.828,0l13-13c0.781-0.781,0.781-2.047,0-2.828L35,16.172	C34.219,15.391,32.953,15.391,32.172,16.172z"
-                                        opacity=".05"></path>
-                                    <path
-                                        d="M20.939,33.061l-8-8c-0.586-0.586-0.586-1.536,0-2.121l1.414-1.414c0.586-0.586,1.536-0.586,2.121,0	L22,27.051l10.525-10.525c0.586-0.586,1.536-0.586,2.121,0l1.414,1.414c0.586,0.586,0.586,1.536,0,2.121l-13,13	C22.475,33.646,21.525,33.646,20.939,33.061z"
-                                        opacity=".07"></path>
-                                    <path fill="#fff"
-                                        d="M21.293,32.707l-8-8c-0.391-0.391-0.391-1.024,0-1.414l1.414-1.414c0.391-0.391,1.024-0.391,1.414,0	L22,27.758l10.879-10.879c0.391-0.391,1.024-0.391,1.414,0l1.414,1.414c0.391,0.391,0.391,1.024,0,1.414l-13,13	C22.317,33.098,21.683,33.098,21.293,32.707z">
-                                    </path>
-                                </svg>
-                            </span>
-
-                        </ng-container>
-
-                    </button>
-                </div>
+                <div class="text-gray-700 mb-2 break-words">{{ convertTimestampToReadable(rating?.createdAt)}}</div>
             </div>
         </div>
-    </div>
 
-</main>
 
-<!-- Warning Modal -->
-<div *ngIf="warning" class="fixed inset-0 flex items-center justify-center z-50">
-    <!-- Background overlay -->
-    <div class="fixed inset-0 bg-gray-900 opacity-50"></div>
-
-    <!-- Modal container -->
-    <div class="bg-white p-8 rounded shadow-md max-w-sm z-50">
-        <!-- Modal header -->
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold">Warning!</h3>
-            <!-- Close button -->
-            <button class="text-gray-500 hover:text-gray-700" (click)="cloaseWarnigModal()">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
+        <!-- Pagination Controls -->
+        <div class="flex justify-center mt-6 mb-10">
+            <button class="pagination-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+                Previous
+            </button>
+            <button class="pagination-btn" [disabled]="endIndex >= ratingdata?.length"
+                (click)="onPageChange(currentPage + 1)">
+                Next
             </button>
         </div>
-        <!-- Modal body -->
-        <p class="text-gray-700">{{warning}}</p>
+
     </div>
-</div>
+
+    <div class="container mx-auto pt-10 pb-10 px-10" *ngIf="ratingdata == null && ratingdata == undefined">
+        <p class="text-gay-400">No Ratings Found</p>
+    </div>
 
 
-<!-- Booking Successful Model -->
-<app-bookingmodal *ngIf="bookingSuccessModalVisible" (closeModalEvent)="closeBookingSuccessModal()"></app-bookingmodal>
-
-
-
+</main>
 
 <app-footer></app-footer>

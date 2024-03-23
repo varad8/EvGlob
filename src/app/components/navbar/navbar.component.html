@@ -1,8 +1,8 @@
 <nav class="nav-desktop">
     <a class="nav-desktop-logo" href="#">
-        <div class="flex items-center">
-            <img src="../../../assets/icon.png" class="h-10" alt="logo" />
-            <span class="dark:text-white text-green-500">EvGlob</span>
+        <div class="flex items-center gap-2">
+            <img src="../../../assets/logo.png" class="h-10" alt="logo" />
+            <span class="dark:text-white text-green-500 text-xl">Green Hub Drive</span>
         </div>
     </a>
     <!-- Mobile Menu Toggle Action -->
@@ -52,22 +52,7 @@
                     d="M12 5v0m0 7v0m0 7v0m0-13a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
             </svg>
         </li>
-        <li><a class="desktop-li" href="#">Services</a></li>
-        <li class="text-gray-300">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" class="w-4 h-4 current-fill"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 5v0m0 7v0m0 7v0m0-13a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-        </li>
-        <li><a class="desktop-li" href="#">Pricing</a></li>
-        <li class="text-gray-300">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" class="w-4 h-4 current-fill"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 5v0m0 7v0m0 7v0m0-13a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-        </li>
+
         <li><a class="desktop-li" routerLink="/contact">Contact</a></li>
     </ul>
 
@@ -77,6 +62,46 @@
 
 
     <a *ngIf="session" class="signup-btn-desktop ml-203" routerLink="/user">Dashboard</a>
+    <div class="relative  text-left lg:inline-block xl:inline-block hidden ml-3" *ngIf="!session">
+        <div>
+            <button type="button" (click)="toggleMenuOption()"
+                class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                id="menu-button" aria-expanded="true" aria-haspopup="true">
+                Options
+                <svg class="-mr-1 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd"
+                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+
+        <!--
+        Dropdown menu, show/hide based on menu state.
+    
+        Entering: "transition ease-out duration-100"
+          From: "transform opacity-0 scale-95"
+          To: "transform opacity-100 scale-100"
+        Leaving: "transition ease-in duration-75"
+          From: "transform opacity-100 scale-100"
+          To: "transform opacity-0 scale-95"
+      -->
+        <div *ngIf="isOpenMenu"
+            class="absolute   right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+            <div class="py-1" role="none">
+                <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" -->
+                <a routerLink="/register/evadmin" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem"
+                    tabindex="-1" id="menu-item-0">Ev Register</a>
+                <a routerLink="/login/evadmin" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem"
+                    tabindex="-1" id="menu-item-1">Ev Login</a>
+            </div>
+            <div class="py-1" role="none">
+                <a routerLink="/login/admin" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1"
+                    id="menu-item-2">Admin Login</a>
+            </div>
+        </div>
+    </div>
 
 
 
@@ -103,11 +128,11 @@
 <div class="navbar-menu relative z-50" *ngIf="isMobileDevice && isNavbarOpen">
     <div class="navbar-backdrop fixed inset-0 bg-gray-800 opacity-25"></div>
     <nav class="mobile-nav">
-        <div class="flex items-center mb-8">
-            <a class="mr-auto text-3xl font-bold leading-none" href="#">
+        <div class="flex items-center mb-8 gap-2">
+            <a class="mr-auto text-xl font-bold leading-none" href="#">
                 <div class="flex items-center">
-                    <img src="../../../assets/icon.png" class="h-10" alt="logo" />
-                    <span class="dark:text-white text-green-500">EvGlob</span>
+                    <img src="../../../assets/logo.png" class="h-10" alt="logo" />
+                    <span class="dark:text-white text-green-500">Green Hub Drive</span>
                 </div>
             </a>
             <button class="navbar-close" (click)="toggleClose()">
@@ -127,16 +152,52 @@
                     <a class="nav-li-item" routerLink="/about" routerLinkActive="router-link-active">About Us</a>
                 </li>
                 <li class="mb-1">
-                    <a class="nav-li-item" href="#">Services</a>
-                </li>
-                <li class="mb-1">
-                    <a class="nav-li-item" href="#">Pricing</a>
-                </li>
-                <li class="mb-1">
                     <a class="nav-li-item" routerLink="/contact">Contact</a>
                 </li>
             </ul>
         </div>
+
+        <div class="relative  text-left inline-block" *ngIf="!session">
+            <div>
+                <button type="button" (click)="toggleMenuOption()"
+                    class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                    id="menu-button" aria-expanded="true" aria-haspopup="true">
+                    Options
+                    <svg class="-mr-1 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd"
+                            d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <!--
+                    Dropdown menu, show/hide based on menu state.
+                
+                    Entering: "transition ease-out duration-100"
+                      From: "transform opacity-0 scale-95"
+                      To: "transform opacity-100 scale-100"
+                    Leaving: "transition ease-in duration-75"
+                      From: "transform opacity-100 scale-100"
+                      To: "transform opacity-0 scale-95"
+                  -->
+            <div *ngIf="isOpenMenu"
+                class="absolute   right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                <div class="py-1" role="none">
+                    <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" -->
+                    <a routerLink="/register/evadmin" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem"
+                        tabindex="-1" id="menu-item-0">Ev Register</a>
+                    <a routerLink="/login/evadmin" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem"
+                        tabindex="-1" id="menu-item-1">Ev Login</a>
+                </div>
+                <div class="py-1" role="none">
+                    <a routerLink="/login/admin" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem"
+                        tabindex="-1" id="menu-item-2">Admin Login</a>
+                </div>
+            </div>
+        </div>
+
         <div class="mt-auto">
             <div class="pt-6" *ngIf="!session">
                 <a class="sign-in-btn" routerLink="/login/user">Sign in</a>

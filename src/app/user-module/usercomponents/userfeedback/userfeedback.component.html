@@ -22,7 +22,7 @@
     </div>
     <!-- Second grid section -->
     <div class="h-screen  overflow-y-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4 mt-2 mb-3">
+        <div class="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-3 gap-2 mt-2 mb-3">
             <ng-container *ngFor="let rating of filterRatings; let i = index">
                 <div class="bg-white dark:bg-slate-800 shadow-lg rounded-lg  w-full border border-gray-400">
                     <div class="px-4 py-2">
@@ -32,37 +32,41 @@
                         <!-- Rating Details -->
                         <h5 class="text-lg text-gray-500 dark:text-gray-400">Rating Details</h5>
                         <!-- Display rating data -->
-                        <div class="flex gap-5 justify-between mt-2 mb-2">
-                            <p class="text-gray-500 text-sm">User Id: {{ rating.userId }}</p>
-                            <p class="text-gray-500 text-sm">Station Id: {{ rating.stationId }}</p>
-                            <p class="text-gray-500 text-sm">Ratings out of 5: {{ rating.rating }}</p>
-                            <p class="text-gray-500 text-sm">Feedback : {{ rating.feedbackMsg }}</p>
+                        <div class="flex gap-2 justify-between mt-2 mb-2">
+                            <div>
+                                <p class="text-gray-500 text-sm">User Id: {{ rating.userId }}</p>
+                                <p class="text-gray-500 text-sm">Station Id: {{ rating.stationId }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Ratings out of 5: {{ rating.rating }}</p>
+                                <p class="text-gray-500 text-sm">Feedback : {{ rating.feedbackMsg }}</p>
+                            </div>
                         </div>
 
                     </div>
 
 
-                    <div class="h-auto flex items-center justify-center">
+                    <div class="flex items-center justify-center  mb-3 gap-2">
                         <button (click)="toggleModal(rating)" type="button"
-                            class="bg-green-600 text-white rounded-lg px-3 py-1 mb-3">Edit</button>
+                            class="bg-green-600 text-white rounded-lg px-3 py-1">Edit</button>
+
+                        <a [href]="'user/details/' + rating.stationId"
+                            class="bg-violet-900 text-white rounded-lg px-3 py-1">View
+                            Station
+                            Details</a>
                     </div>
 
                 </div>
             </ng-container>
         </div>
 
-        <div class="flex justify-center items-center">
-            <svg *ngIf="!filterRatings" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                style="margin:auto;display:block;" width="100px" height="100px" viewBox="0 0 100 100"
-                preserveAspectRatio="xMidYMid">
-                <path d="M10 50A40 40 0 0 0 90 50A40 42 0 0 1 10 50" fill="#36e30c" stroke="none">
-                    <animateTransform attributeName="transform" type="rotate" dur="1s" repeatCount="indefinite"
-                        keyTimes="0;1" values="0 50 51;360 50 51"></animateTransform>
-                </path>
-            </svg>
+        <div *ngIf="!filterRatings || filterRating.length === 0" class="flex justify-center items-center">
+            <p class="text-gray-500">No ratings found.</p>
         </div>
-
     </div>
+
+
+
 </div>
 
 
@@ -76,7 +80,7 @@
             </div>
             <div class="bg-gray-200 w-full flex flex-col items-center">
                 <div class="flex flex-col items-center py-6 space-y-3">
-                    <span class="text-md text-gray-800">How was quality of the EvStation
+                    <span class="text-md text-gray-800 px-3">How was quality of the EvStation
                         {{selectedRating.stationId}}?</span>
                     <div class="flex space-x-3">
                         <svg *ngFor="let star of stars; let i = index" [class]="star.class"

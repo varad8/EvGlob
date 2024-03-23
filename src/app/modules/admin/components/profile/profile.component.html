@@ -26,7 +26,8 @@
             <div class="flex flex-col gap-5.5 p-6.5">
 
                 <div class="mt-5 flex items-center justify-center">
-                    <img [src]="evAdminProfile.profile.profilepic" class="rounded-full w-20 h-20 border border-stroke">
+                    <img [src]="getProfileImageUrl(evAdminProfile.profile.profilepic)"
+                        class="rounded-full w-20 h-20 border border-stroke">
                 </div>
 
                 <!-- For First Name and Last Name  -->
@@ -109,6 +110,17 @@
                 </div>
 
 
+                <div class="mt-5 grid gap-2 grid-cols-1 md:gap-6">
+                    <div class="relative z-0 w-full mb-5 group">
+                        <textarea [(ngModel)]="evAdminProfile.address" type="text" class="floating-input peer"
+                            placeholder=" " readonly name="address" id="adress"></textarea>
+                        <label for="adress"
+                            class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Adress</label>
+                    </div>
+                </div>
+
+
+
             </div>
         </div>
 
@@ -179,7 +191,7 @@
 
                 <!-- EV Imge -->
                 <div class="mt-3 mb-5 flex items-center justify-center">
-                    <img [src]="evAdminProfile.imageUrl" alt="Ev Image"
+                    <img [src]="getProfileImageUrl(evAdminProfile.imageUrl)" alt="Ev Image"
                         class="border-stroke rounded-md  object-contain  w-full h-50" />
                 </div>
 

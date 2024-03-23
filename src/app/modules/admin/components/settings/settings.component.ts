@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { EvAdminProfile } from '../../../../model/ev-admin-profile';
+
 import { AdminserviceService } from '../../../../EvDataService/adminservice.service';
 import { AuthService } from '../../../../shared/auth.service';
 import { AngularFireUploadTask } from '@angular/fire/compat/storage';
 import { Time } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment.development';
 
 type DayOfWeek =
   | 'Monday'
@@ -20,7 +21,8 @@ type DayOfWeek =
   styleUrl: './settings.component.css',
 })
 export class SettingsComponent {
-  evAdminProfile: EvAdminProfile | undefined;
+  private baseUrl = environment.BASE_URL;
+  evAdminProfile: any | undefined;
   selectedFile: File | null = null;
   selectedEvFile: File | null = null;
   previewImage: string | null = null;
@@ -34,7 +36,7 @@ export class SettingsComponent {
     this.selectedCityName = event.target.value;
     this.selectedCityState = this.getState(this.selectedCityName);
 
-    this.evAdminProfile!.location = {
+    this.evAdminProfile.location = {
       city: this.selectedCityName,
       state: this.selectedCityState,
     };
@@ -56,46 +58,42 @@ export class SettingsComponent {
   ngOnInit() {
     // Fetch AdminProfile data
     // Check if there is an existing session with the admin or superadmin accountType
-    const sessionUser = this.auth.getSession();
-    if (sessionUser && sessionUser.accountType === 'evadmin') {
-      this.auth
-        .getEvAdminProfileByUserId(sessionUser.userid)
-        .subscribe((profile) => {
-          if (profile) {
-            this.evAdminProfile = profile;
-            console.log(this.evAdminProfile);
-            if (this.evAdminProfile?.location?.city) {
-              this.selectedCityName = this.evAdminProfile.location.city;
-              this.selectedCityState = this.getState(this.selectedCityName);
 
-              console.log('City:', this.selectedCityName);
-              this.onCityChange({ target: { value: this.selectedCityName } });
-            }
-          } else {
-            console.error('User not found or not logged in');
-          }
-        });
-      // this.evAdminProfile = sessionUser;
-      // console.log(this.evAdminProfile);
-    } else {
-      console.error('User not logged in');
-    }
+    // Fetch EvAdminProfile data
+    const sessionUser = this.auth.getEvAdminSession();
+    if (sessionUser) {
+      this.auth.getAdminProfileUsingId(sessionUser.userid).subscribe(
+        (data) => {
+          console.log(data);
+          this.evAdminProfile = data[0];
 
-    // Make an HTTP GET request to the API
-    this.http
-      .get('https://mocki.io/v1/79c1cf35-6327-4ffc-9e38-16e5a9fba095')
-      .subscribe(
-        (data: any) => {
-          // Assign the received data to the variable
-          this.citiesapiData = data;
+          this.selectedCityName = this.evAdminProfile.location.city;
+          this.selectedCityState = this.evAdminProfile.location.state;
 
-          // You can now use this.apiData in your component template or perform any other actions with the data
-          // console.log(data);
+          // this.userProfile.dob = this.formatDate(this.userProfile.dob);
+          this.evAdminProfile.updatedAt = this.convertTimestampToReadable(
+            this.evAdminProfile.updatedAt
+          );
+          this.evAdminProfile.profile.dateofjoining =
+            this.convertTimestampToReadable(
+              this.evAdminProfile.profile.dateofjoining
+            );
         },
         (error) => {
-          console.error('Error fetching data:', error);
+          console.error('Error fetching user data:', error);
+          // Handle error
         }
       );
+    }
+
+    this.adminService.getAllCity().subscribe(
+      (data) => {
+        this.citiesapiData = data;
+      },
+      (error) => {
+        console.error('Error fetching data:', error);
+      }
+    );
   }
 
   getDayOfWeek(): DayOfWeek[] {
@@ -111,71 +109,31 @@ export class SettingsComponent {
   }
 
   //save profile basic information
-  saveProfile() {
-    if (!this.validateDOB(this.evAdminProfile!.profile.dob)) {
-      console.error('Invalid date of birth format. Please use dd/mm/yyyy.');
-      alert('Invalid date of birth format. Please use dd/mm/yyyy.');
-      return;
-    }
-
-    if (!this.validateMobileNumber(this.evAdminProfile!.profile.mobile)) {
-      alert('Invalid mobile number format. Please use a 10-digit number.');
-      console.error(
-        'Invalid mobile number format. Please use a 10-digit number.'
-      );
-      return;
-    }
-
-    if (this.validateFirstName(this.evAdminProfile!.profile.firstname)) {
-      console.error('Please enter first name');
-      alert('Please enter first name');
-      return;
-    }
-
-    if (this.validateLastName(this.evAdminProfile!.profile.lastname)) {
-      console.error('Please enter last name');
-      alert('Please enter last name');
-      return;
-    }
-
+  saveProfileDetails() {
     const userId = this.evAdminProfile!.userid;
     const fieldsToUpdate = {
       firstname: this.evAdminProfile!.profile.firstname,
       lastname: this.evAdminProfile!.profile.lastname,
       dob: this.evAdminProfile!.profile.dob,
       mobile: this.evAdminProfile!.profile.mobile,
+      address: this.evAdminProfile!.address,
     };
 
     this.adminService
       .updateEvAdminProfileFields(userId, fieldsToUpdate)
-      .then(() => {
-        alert('Profile fields updated successfully.');
-      })
-      .catch((error) => {
-        alert('Error updating profile fields:' + error);
-      });
-  }
-
-  validateDOB(dob: string): boolean {
-    // Regular expression to match the format dd/mm/yyyy
-    const dobRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-    return dobRegex.test(dob);
-  }
-
-  validateMobileNumber(mobile: string): boolean {
-    // Regular expression to match 10-digit numbers
-    const mobileRegex = /^\d{10}$/;
-    return mobileRegex.test(mobile);
-  }
-  validateFirstName(firstname: string): boolean {
-    return firstname == '';
-  }
-  validateLastName(lastname: string): boolean {
-    return lastname == '';
+      .subscribe(
+        (response) => {
+          console.log('Ev User profile updated successfully:', response);
+          alert(response.message);
+        },
+        (error) => {
+          console.error('Error updating Ev user profile:', error);
+          alert(error.error.error);
+        }
+      );
   }
 
   //select file for profile
-
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
@@ -210,32 +168,18 @@ export class SettingsComponent {
   async saveEvImage() {
     if (this.selectedEvFile) {
       const userId = this.evAdminProfile?.userid || '';
-      let previewEVImage: string | null = this.evAdminProfile?.imageUrl || null;
 
-      console.log('Profile Pic:' + previewEVImage);
-
-      // Check if there's a previous EVImage picture
-      if (previewEVImage) {
-        // Delete the previous EvImage picture
-        await this.adminService.deleteEvImage(
-          this.adminService.getFilenameFromLink(previewEVImage)
-        );
-      }
-
-      // Upload the new EVImage picture
-      const downloadURL = await this.adminService.uploadEvImage(
-        userId,
-        this.selectedEvFile
+      // Call the service method to upload the profile image
+      this.adminService.updateCoverImage(userId, this.selectedEvFile).subscribe(
+        (response) => {
+          console.log('File uploaded successfully:', response);
+          alert(response.message);
+        },
+        (error) => {
+          console.error('Error uploading file:', error);
+          alert(error.error.error);
+        }
       );
-
-      if (downloadURL) {
-        // Update profile picture URL in the profile data
-        this.evAdminProfile!.imageUrl = downloadURL;
-        // Save the updated profile
-        await this.adminService.updateEvImage(userId, downloadURL).then(() => {
-          alert('Ev Image Updated successfully');
-        });
-      }
     }
   }
 
@@ -244,35 +188,20 @@ export class SettingsComponent {
   async saveProfilePic() {
     if (this.selectedFile) {
       const userId = this.evAdminProfile?.userid || '';
-      let prevProfilePicUrl: string | null =
-        this.evAdminProfile?.profile.profilepic || null;
 
-      console.log('Profile Pic:' + prevProfilePicUrl);
-
-      // Check if there's a previous profile picture
-      if (prevProfilePicUrl) {
-        // Delete the previous profile picture
-        await this.adminService.deleteProfilePic(
-          this.adminService.getFilenameFromLink(prevProfilePicUrl)
+      // Call the service method to upload the profile image
+      this.adminService
+        .updateAdminProfilePic(userId, this.selectedFile)
+        .subscribe(
+          (response) => {
+            console.log('File uploaded successfully:', response);
+            alert(response.message);
+          },
+          (error) => {
+            console.error('Error uploading file:', error);
+            alert(error.error.error);
+          }
         );
-      }
-
-      // Upload the new profile picture
-      const downloadURL = await this.adminService.uploadProfilePic(
-        userId,
-        this.selectedFile
-      );
-
-      if (downloadURL) {
-        // Update profile picture URL in the profile data
-        this.evAdminProfile!.profile.profilepic = downloadURL;
-        // Save the updated profile
-        this.adminService
-          .updateEvAdminProfileFields(userId, this.evAdminProfile!.profile)
-          .then(() => {
-            alert('Profile Image Uploaded Successfully');
-          });
-      }
     }
   }
 
@@ -280,30 +209,36 @@ export class SettingsComponent {
 
   saveEvDetails() {
     const userId = this.evAdminProfile!.userid;
-    const updatedEvTimings = this.evAdminProfile!.evTimings; // Update evTimings
+    const updatedEvTimings = this.transformEvTimings(
+      this.evAdminProfile!.evTimings
+    ); // Update evTimings
     const updatedRate = this.evAdminProfile!.rate; // Update rate
     const updatedTitle = this.evAdminProfile!.title; // Update title
     const updatedDescription = this.evAdminProfile!.description; // Update description
-    const updateLocattion = this.evAdminProfile!.location; //update locatiopn
+    const updateLocation = this.evAdminProfile!.location; //update locatiopn
     const updateCoordinates = this.evAdminProfile!.coordinates; //update coordinates
 
-    // Call the service method to update the fields
-    this.adminService
-      .updateEVAdminDetails(
-        userId,
-        updatedEvTimings,
-        updatedRate,
-        updatedTitle,
-        updatedDescription,
-        updateLocattion,
-        updateCoordinates
-      )
-      .then(() => {
-        alert('Details updated successfully.');
-      })
-      .catch((error) => {
-        alert('Error updating details: ' + error);
-      });
+    const evDetails = {
+      evTimings: updatedEvTimings,
+      rate: updatedRate,
+      title: updatedTitle,
+      description: updatedDescription,
+      location: updateLocation,
+      coordinates: updateCoordinates,
+    };
+
+    console.log(evDetails);
+
+    this.adminService.updateEvDetails(userId, evDetails).subscribe(
+      (response) => {
+        console.log('Ev User profile updated successfully:', response);
+        alert(response.message);
+      },
+      (error) => {
+        console.error('Error updating Ev user profile:', error);
+        alert(error.error.error);
+      }
+    );
   }
 
   // onchange date on set on that evTimings object
@@ -379,5 +314,39 @@ export class SettingsComponent {
 
     // Return the time string in 'HH:mm' format
     return `${formattedHours}:${formattedMinutes}`;
+  }
+
+  formatTime2(hours: number, minutes: number): string {
+    const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+    return `${formattedHours}:${formattedMinutes}`;
+  }
+
+  transformEvTimings(evTimings: any): any {
+    const transformedEvTimings: any = {};
+
+    Object.keys(evTimings).forEach((day) => {
+      const openingTime = this.formatTime2(
+        evTimings[day].openingTime.hours,
+        evTimings[day].openingTime.minutes
+      );
+      const closingTime = this.formatTime2(
+        evTimings[day].closingTime.hours,
+        evTimings[day].closingTime.minutes
+      );
+      transformedEvTimings[day] = { openingTime, closingTime };
+    });
+
+    return transformedEvTimings;
+  }
+
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/admin/image/${filename}`;
+  }
+
+  convertTimestampToReadable(timestamp: string): string {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-US', { timeZone: 'UTC' });
   }
 }

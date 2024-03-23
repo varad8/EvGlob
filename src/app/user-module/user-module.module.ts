@@ -9,6 +9,9 @@ import { UserprofileComponent } from './usercomponents/userprofile/userprofile.c
 import { UsersettingComponent } from './usercomponents/usersetting/usersetting.component';
 import { UseranalyticsComponent } from './usercomponents/useranalytics/useranalytics.component';
 import { FormsModule } from '@angular/forms';
+import { EvdetailspageComponent } from './usercomponents/evdetailspage/evdetailspage.component';
+import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
+import { NotificationsComponent } from './usercomponents/notifications/notifications.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +21,14 @@ import { FormsModule } from '@angular/forms';
     UserprofileComponent,
     UsersettingComponent,
     UseranalyticsComponent,
+    EvdetailspageComponent,
+    NotificationsComponent,
   ],
-  imports: [CommonModule, UserModuleRoutingModule, FormsModule],
+  imports: [
+    CommonModule,
+    UserModuleRoutingModule,
+    FormsModule,
+    CanvasJSAngularChartsModule,
+  ],
 })
 export class UserModuleModule {}

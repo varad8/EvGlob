@@ -128,7 +128,8 @@
                 <form>
                     <div class="mb-4 flex items-center gap-3">
                         <div class="h-14 w-14 rounded-full">
-                            <img [src]="previewImage || adminProfile.profilepic" [alt]="adminProfile.firstName">
+                            <img [src]="previewImage || getProfileImageUrl(adminProfile.profilepic)"
+                                [alt]="adminProfile.firstName">
                         </div>
                         <div>
                             <span class="mb-1.5 font-medium text-black dark:text-white">Edit your photo</span>

@@ -115,10 +115,24 @@
 
                     </div>
 
+
+                    <!-- Address -->
+                    <div class="mt-5 grid gap-2 grid-cols-1 md:gap-6">
+                        <div>
+                            <label class="mb-3 block font-medium text-sm text-black dark:text-white">
+                                Address
+                            </label>
+                            <input type="text" [(ngModel)]="evAdminProfile.address" name="address" id="address"
+                                class="w-full shadow-1 rounded-lg border-[1.5px]  bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default">
+                        </div>
+                    </div>
+
+
+
                     <div class="flex justify-center">
                         <button
                             class="flex bg-blue-700 justify-center rounded py-2 px-6 font-medium text-white hover:bg-opacity-90"
-                            type="button" (click)="saveProfile()">
+                            type="button" (click)="saveProfileDetails()">
                             Save
                         </button>
                     </div>
@@ -140,7 +154,7 @@
                 <form>
                     <div class="mb-4 flex items-center gap-3">
                         <div class="h-14 w-14 rounded-full">
-                            <img [src]="previewImage || evAdminProfile.profile.profilepic"
+                            <img [src]="previewImage || getProfileImageUrl(evAdminProfile.profile.profilepic)"
                                 [alt]="evAdminProfile.profile.firstname">
                         </div>
                         <div>
@@ -206,7 +220,7 @@
                 <form action="#">
                     <div class="mb-4 flex items-center gap-3">
                         <div class="h-14 w-14 rounded-full">
-                            <img [src]="evpreviewImage || evAdminProfile.imageUrl"
+                            <img [src]="evpreviewImage || getProfileImageUrl(evAdminProfile.imageUrl)"
                                 [alt]="evAdminProfile.profile.firstname">
 
                         </div>
@@ -311,8 +325,8 @@
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Coordinates
                                 (Lat./Long.)</label>
                             <div class="flex gap-2">
-                                <input type="text" [(ngModel)]="evAdminProfile.coordinates.latitude" name="longitude"
-                                    id="longitude"
+                                <input type="text" [(ngModel)]="evAdminProfile.coordinates.latitude" name="latitude"
+                                    id="latitude"
                                     class="w-full shadow-1 rounded-lg border-[1.5px]  bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default">
 
                                 <input type="text" [(ngModel)]="evAdminProfile.coordinates.longitude" name="longitude"

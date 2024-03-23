@@ -1,9 +1,7 @@
 import { Component } from '@angular/core';
-import { Bookingmodel } from '../../../model/bookingmodel';
 import { UserservicesService } from '../../../UserDataService/userservices.service';
 import { AuthService } from '../../../shared/auth.service';
-import { UserProfile } from '../../../model/user-profile';
-import { Ratingmodel } from '../../../model/ratingmodel';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-userbooking',
@@ -11,17 +9,20 @@ import { Ratingmodel } from '../../../model/ratingmodel';
   styleUrl: './userbooking.component.css',
 })
 export class UserbookingComponent {
-  bookings: Bookingmodel[] | undefined;
-  userProfiles: UserProfile[] = [];
-  filteredBookings: Bookingmodel[];
+  bookings: any;
+  userProfiles: any;
+  filteredBookings: any;
   filterType: string = 'All';
   searchTerm: string = '';
   filterDate: string = '';
   stationid: string = '';
-  session: UserProfile;
+  session: any;
   showModal: boolean = false;
-  selectedBooking: Bookingmodel;
+  selectedBooking: any;
   feedbackMsg: string = '';
+  selectedratingdata: any | undefined;
+  paymentData: any;
+  isPaymentModal: boolean = false;
 
   constructor(
     private userservice: UserservicesService,
@@ -30,26 +31,39 @@ export class UserbookingComponent {
 
   ngOnInit(): void {
     this.session = this.auth.getWebUserSession();
-    console.log(this.session.id);
-    this.getBookings(this.session.id);
+    this.getBookings(this.session.userid);
   }
 
-  async getBookings(userid: string): Promise<void> {
-    this.userservice.getBookingsByUserId(userid).subscribe(async (bookings) => {
-      this.bookings = bookings;
+  //Get Booking
+  getBookings(userid: string) {
+    this.userservice.getBookingByUserId(userid).subscribe(
+      (bookings: any) => {
+        this.bookings = bookings;
+        this.userProfiles = []; // Initialize userProfiles array
 
-      for (const booking of this.bookings) {
-        if (booking.userId) {
-          const userProfile = await this.auth.getUserUsingID(booking.userId);
-          if (userProfile) {
-            this.userProfiles.push(userProfile);
+        const profileObservables = this.bookings
+          .filter((booking: any) => !!booking.userId)
+          .map((booking: any) =>
+            this.auth.getUserProfileUsingID(booking.userId)
+          );
+
+        forkJoin(profileObservables).subscribe(
+          (profiles: any[]) => {
+            this.userProfiles = profiles.map((data) => data.profile);
+            this.filteredBookings = this.bookings;
+            this.filterBookings();
+          },
+          (error) => {
+            console.error('Error fetching user data:', error);
+            // Handle error
           }
-        }
+        );
+      },
+      (error) => {
+        console.error('Error fetching booking data:', error);
+        // Handle error
       }
-
-      this.filteredBookings = this.bookings;
-      this.filterBookings();
-    });
+    );
   }
 
   filterBookings(): void {
@@ -77,11 +91,11 @@ export class UserbookingComponent {
       );
     } else if (this.filterType === 'Visited') {
       tempBookings = tempBookings.filter(
-        (booking) => booking.visitingStatus === 'visited'
+        (booking) => booking.visitingStatus === 'Visited'
       );
     } else if (this.filterType === 'NotVisited') {
       tempBookings = tempBookings.filter(
-        (booking) => booking.visitingStatus === 'not visited'
+        (booking) => booking.visitingStatus === 'Not Visited'
       );
     }
 
@@ -115,11 +129,11 @@ export class UserbookingComponent {
       const aBookingDate = new Date(a.bookedForDate);
       const bBookingDate = new Date(b.bookedForDate);
 
-      if (a.visitingStatus === 'visited' && b.visitingStatus !== 'visited') {
+      if (a.visitingStatus === 'Visited' && b.visitingStatus !== 'Visited') {
         return 1; // Move 'visited' records to the end
       } else if (
-        a.visitingStatus !== 'visited' &&
-        b.visitingStatus === 'visited'
+        a.visitingStatus !== 'Visited' &&
+        b.visitingStatus === 'Visited'
       ) {
         return -1; // Keep 'not visited' records before 'visited' records
       } else if (aBookingDate < currentDate && bBookingDate < currentDate) {
@@ -171,33 +185,31 @@ export class UserbookingComponent {
     return bookingDate.getTime() > currentDate.getTime();
   }
 
-  rateUse(bookingdata: Bookingmodel) {
-    console.log(bookingdata);
-  }
-
   // Function to toggle the modal visibility
-  toggleModal(dataofbooking: Bookingmodel) {
+  toggleModal(dataofbooking: any) {
     this.selectedBooking = dataofbooking;
     this.showModal = !this.showModal;
 
     // Call the method to get rating data for the selected booking
 
-    this.userservice
-      .getRatingByUserIdAndStationId(
-        dataofbooking.userId,
-        dataofbooking.stationId
-      )
-      .subscribe((ratingData: Ratingmodel[]) => {
-        // Handle the rating data here, such as displaying it in the modal
-        console.log('Rating data:', ratingData[0]);
-        if (ratingData.length > 0) {
-          this.filledStars = ratingData[0].rating;
+    this.userservice.getRatingByOrderId(dataofbooking.bookingRefId).subscribe(
+      (response) => {
+        console.log('Rating data:', response.rating);
+        if (response.rating) {
+          this.filledStars = response.rating.rating;
+          this.selectedratingdata = response.rating;
+          console.log(response.rating.rating);
         } else {
-          this.filledStars = 0; // If no rating data found, set filledStars to 0
+          this.filledStars = 0;
         }
-        this.feedbackMsg = ratingData[0]?.feedbackMsg || ''; // Set feedback message
+        this.feedbackMsg = response.rating.feedbackMsg || '';
         this.updateStars();
-      });
+      },
+      (error) => {
+        this.selectedratingdata = undefined;
+        console.error('Error fetching rating data:', error);
+      }
+    );
   }
 
   toggleClose() {
@@ -238,29 +250,90 @@ export class UserbookingComponent {
     });
   }
 
-  rateNow(bookingData: Bookingmodel): void {
+  rateNow(bookingData: any): void {
     // Create a Ratingmodel object with the necessary data
-    const ratingData: Ratingmodel = {
-      docid: '',
-      stationId: bookingData.stationId,
-      userId: bookingData.userId,
-      rating: this.filledStars,
-      feedbackMsg: this.feedbackMsg,
-    };
 
-    // Call the saveOrUpdateRating method with the ratingData
-    this.userservice
-      .saveOrUpdateRating(ratingData)
-      .then(() => {
-        this.filledStars = 0;
-        this.updateStars();
-        this.feedbackMsg = '';
-        this.selectedBooking = undefined;
-        this.showModal = false;
-        alert('Rating saved successfully!');
-      })
-      .catch((error) => {
-        alert('Error saving rating: ' + error);
-      });
+    if (this.selectedratingdata != undefined) {
+      const ratingData = {
+        ratingId: this.selectedratingdata.ratingId,
+        stationId: bookingData.stationId,
+        userId: bookingData.userId,
+        rating: this.filledStars,
+        feedbackMsg: this.feedbackMsg,
+        orderId: bookingData.bookingRefId,
+      };
+
+      // If ratingId exists, call updateRating
+      this.userservice.updateRating(ratingData).subscribe(
+        (response) => {
+          this.toggleClose();
+          alert(response.message);
+          console.log('Rating updated successfully:', response);
+        },
+        (error) => {
+          console.error('Error updating rating:', error);
+        }
+      );
+    } else {
+      const ratingData = {
+        stationId: bookingData.stationId,
+        userId: bookingData.userId,
+        rating: this.filledStars,
+        feedbackMsg: this.feedbackMsg,
+        orderId: bookingData.bookingRefId,
+      };
+
+      // If ratingId doesn't exist, call saveRating
+      this.userservice.saveRating(ratingData).subscribe(
+        (response) => {
+          alert(response.message);
+          console.log('Rating saved successfully:', response);
+        },
+        (error) => {
+          alert(error.error.error);
+          console.error('Error saving rating:', error);
+        }
+      );
+    }
+  }
+
+  openPaymentModal() {
+    this.isPaymentModal = true;
+  }
+  closeModal() {
+    this.paymentData = null;
+    this.isPaymentModal = false;
+  }
+
+  //View Payment Details
+  paymentDetails(orderid: string) {
+    this.userservice.getPaymentDataByOrderId(orderid).subscribe(
+      (response: any) => {
+        this.paymentData = response.payments[0];
+        console.log(response.payments[0]);
+        this.openPaymentModal();
+      },
+      (error) => {
+        console.error('Error fetching booking data:', error);
+        // Handle error
+      }
+    );
+  }
+
+  //Download Invoice
+  downloadInvoice(orderid: string) {
+    this.userservice.sendInvoiceToUser(orderid, this.session.email);
+  }
+
+  //Format amount
+  formatCurrency(value: number): string {
+    // Divide by 100 to get the rupees
+    const rupees = value / 100;
+
+    // Convert rupees to a string with two decimal places
+    const formattedValue = rupees.toFixed(2);
+
+    // Return the formatted value
+    return formattedValue;
   }
 }

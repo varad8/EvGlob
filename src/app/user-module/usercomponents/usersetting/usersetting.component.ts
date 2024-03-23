@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { UserProfile } from '../../../model/user-profile';
 import { AuthService } from '../../../shared/auth.service';
 import { UserservicesService } from '../../../UserDataService/userservices.service';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment.development';
 
 @Component({
   selector: 'app-usersetting',
@@ -10,7 +10,9 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './usersetting.component.css',
 })
 export class UsersettingComponent {
-  userProfile: UserProfile | undefined;
+  private baseUrl = environment.BASE_URL;
+  profileData: any;
+  userProfile: any;
   selectedFile: File | null = null;
   previewImage: string | null = null;
 
@@ -23,10 +25,8 @@ export class UsersettingComponent {
     this.selectedCityName = event.target.value;
     this.selectedCityState = this.getState(this.selectedCityName);
 
-    this.userProfile!.location = {
-      city: this.selectedCityName,
-      state: this.selectedCityState,
-    };
+    this.userProfile!.city = this.selectedCityName;
+    this.userProfile!.state = this.selectedCityState;
   }
 
   getState(cityName: string): string {
@@ -44,30 +44,33 @@ export class UsersettingComponent {
   ngOnInit() {
     const sessionUser = this.auth.getWebUserSession();
     if (sessionUser?.accountType === 'user') {
-      this.auth.getUserProfileUsingID(sessionUser.userid).then((Profile) => {
-        if (Profile) {
-          this.userProfile = Profile;
+      this.auth.getUserProfileUsingID(sessionUser.userid).subscribe(
+        (data) => {
+          this.userProfile = data.profile;
+          this.userProfile.createdDate = this.convertTimestampToReadable(
+            this.userProfile.createdDate
+          );
+          this.userProfile.dob = this.formatDate(this.userProfile.dob);
+          this.selectedCityName = this.userProfile.city;
+          this.selectedCityState = this.userProfile.state;
+          console.log(this.formatDate(this.userProfile.dob));
+        },
+        (error) => {
+          console.error('Error fetching user data:', error);
+          // Handle error
         }
-      });
-    } else {
-      console.error('User not logged in');
+      );
     }
 
     // Make an HTTP GET request to the API
-    this.http
-      .get('https://mocki.io/v1/79c1cf35-6327-4ffc-9e38-16e5a9fba095')
-      .subscribe(
-        (data: any) => {
-          // Assign the received data to the variable
-          this.citiesapiData = data;
-
-          // You can now use this.apiData in your component template or perform any other actions with the data
-          console.log(data);
-        },
-        (error) => {
-          console.error('Error fetching data:', error);
-        }
-      );
+    this.userservice.getAllCity().subscribe(
+      (data) => {
+        this.citiesapiData = data;
+      },
+      (error) => {
+        console.error('Error fetching data:', error);
+      }
+    );
   }
 
   //select file for profile
@@ -87,99 +90,83 @@ export class UsersettingComponent {
   }
 
   //saveUserDetails
-  saveUserDetetails() {
+
+  updateUserProfileDetails() {
     const userid = this.userProfile!.userid;
-    const firstName = this.userProfile!.firstname;
-    const lastName = this.userProfile!.lastname;
+    const gender = this.userProfile!.gender;
+    const firstname = this.userProfile!.firstname;
+    const lastname = this.userProfile!.lastname;
     const dob = this.userProfile!.dob;
-    const mobileNo = this.userProfile!.mobile;
+    const mobile = this.userProfile!.mobile;
     const address = this.userProfile!.address;
-    const updateLocattion = this.userProfile!.location;
+    const city = this.userProfile!.city;
+    const state = this.userProfile!.state;
 
-    // Validate DOB format
-    if (!this.validateDOBFormat(dob)) {
-      alert('Invalid DOB format. Please use dd/MM/yyyy.');
-      return; // Stop execution if DOB format is invalid
-    }
+    this.profileData = {
+      firstname: firstname,
+      lastname: lastname,
+      mobile: mobile,
+      dob: dob,
+      address: address,
+      city: city,
+      state: state,
+      gender: gender,
+    };
 
-    // Call the service method to update the fields
     this.userservice
-      .updateUserDetails(
-        userid,
-        lastName,
-        firstName,
-        dob,
-        mobileNo,
-        address,
-        updateLocattion
-      )
-      .then(() => {
-        alert('Details updated successfully.');
-      })
-      .catch((error) => {
-        alert('Error updating details: ' + error);
-      });
+      .updateUserProfileDetails(userid, this.profileData)
+      .subscribe(
+        (response) => {
+          console.log('User profile updated successfully:', response);
+          alert(response.message);
+        },
+        (error) => {
+          console.error('Error updating user profile:', error);
+          alert(error.error.error);
+        }
+      );
   }
 
-  // Function to format Date to dd/MM/yyyy
-  formatDateToDDMMYYYY(date: Date | string): string {
-    if (typeof date === 'string') {
-      // You might need additional parsing logic here based on your date string format
-      date = new Date(date);
-    }
-
-    if (date instanceof Date && !isNaN(date.getTime())) {
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is zero-based
-      const year = String(date.getFullYear());
-
-      return `${day}/${month}/${year}`;
-    }
-
-    return ''; // Return an empty string if date is not a valid Date object
-  }
-
-  // Validate DOB format
-  validateDOBFormat(dob: Date | string): boolean {
-    const formattedDOB = this.formatDateToDDMMYYYY(dob);
-    const dobRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-
-    // Check if the formatted DOB matches the expected format (dd/MM/yyyy)
-    return dobRegex.test(formattedDOB);
+  formatDate(dateString: string): string {
+    // Parse the ISO 8601 date string into a Date object
+    const date = new Date(dateString);
+    // Extract year, month, and day from the Date object
+    const year = date.getFullYear();
+    // Months are zero-based in JavaScript Date objects, so add 1 to get the correct month
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    // Construct the formatted date string in yyyy-mm-dd format
+    return `${year}-${month}-${day}`;
   }
 
   //update profile image
   async saveProfilePic() {
     if (this.selectedFile) {
-      const userid = this.userProfile?.userid || '';
-      let previewEVImage: string | null = this.userProfile?.profilepic || null;
+      const userId = this.userProfile?.userid || '';
 
-      console.log('Profile Pic:' + previewEVImage);
-
-      // Check if there's a previous profile picture
-      if (previewEVImage) {
-        // Delete the previous profile picture
-        await this.userservice.deleteProfilePic(
-          this.userservice.getFilenameFromLink(previewEVImage)
-        );
-      }
-
-      // Upload the new EVImage picture
-      const downloadURL = await this.userservice.uploadProfileImage(
-        userid,
-        this.selectedFile
+      // Call the service method to upload the profile image
+      this.auth.uploadProfileImage(userId, this.selectedFile).subscribe(
+        (response) => {
+          console.log('File uploaded successfully:', response);
+          alert(response.message);
+          // Handle success, if needed
+        },
+        (error) => {
+          console.error('Error uploading file:', error);
+          alert(error.error.error);
+          // Handle error, if needed
+        }
       );
-
-      if (downloadURL) {
-        // Update profile picture URL in the profile data
-        this.userProfile!.profilepic = downloadURL;
-        // Save the updated profile
-        await this.userservice
-          .updateProfileImage(userid, downloadURL)
-          .then(() => {
-            alert('Profile Image Updated successfully');
-          });
-      }
     }
+  }
+
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/user/image/${filename}`;
+  }
+
+  convertTimestampToReadable(timestamp: string): string {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-US', { timeZone: 'UTC' });
   }
 }

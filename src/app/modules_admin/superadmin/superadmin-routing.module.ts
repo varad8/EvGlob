@@ -20,6 +20,7 @@ const routes: Routes = [
       { path: 'evstations', component: SevstationsComponent },
       { path: 'details/:stationid', component: DetailsComponent },
       { path: 'booking', component: BookingevComponent },
+      { path: 'stats/:stationid', component: SevstationsComponent },
     ],
   },
 ];

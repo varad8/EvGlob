@@ -1,407 +1,225 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { EvAdminProfile } from './../model/ev-admin-profile';
 import { LocalStorageService, SessionStorageService } from 'ngx-webstorage';
 import { Time } from '@angular/common';
 import { Observable, map } from 'rxjs';
-import { AdminProfileModel } from '../model/admin-profile-model';
-import { UserProfile } from '../model/user-profile';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   constructor(
-    private fireauth: AngularFireAuth,
     private router: Router,
-    private afs: AngularFirestore,
-    private sst: SessionStorageService
+    private sst: SessionStorageService,
+    private http: HttpClient
   ) {}
 
-  /*******************************************************[Ev Station Admin]***********************************************************/
+  /***************************[User Authentication]*************************** */
+  /** New Code used of REST Api */
+  private baseUrl = environment.BASE_URL;
 
-  //login method for evadmin
-  // evadminlogin(email: string, password: string) {
-  //   this.fireauth.signInWithEmailAndPassword(email, password).then(
-  //     () => {
-  //       localStorage.setItem('token', 'true');
-  //       this.router.navigate(['admin/dashboard']);
-  //     },
-  //     (err) => {
-  //       alert('Somethin Went Wrong');
-  //       this.router.navigate(['login/evadmin']);
-  //     }
-  //   );
-  // }
-
-  evadminlogin(email: string, password: string) {
-    this.fireauth.signInWithEmailAndPassword(email, password).then(
-      (authResult) => {
-        const uid = authResult.user?.uid || '';
-
-        // Check if the user with this UID exists in the Firestore collection
-        const userRef = this.afs.collection('/Evstation', (ref) =>
-          ref.where('userid', '==', uid)
-        );
-
-        userRef
-          .get()
-          .toPromise()
-          .then((snapshot) => {
-            if (snapshot && !snapshot.empty) {
-              // User found, check the accountType
-              const user = snapshot.docs[0].data() as EvAdminProfile;
-              if (user.accountType === 'evadmin') {
-                // Save user information in session storage
-                this.sst.store('user', user);
-
-                // Navigate to the dashboard
-                this.router.navigate(['admin/dashboard']);
-              } else {
-                alert('Unauthorized access. Only evadmin allowed.');
-              }
-            } else {
-              alert('User profile not found.');
-            }
-          })
-          .catch((err) => {
-            console.error('Error checking user profile:', err);
-            alert('Something went wrong.');
-            this.router.navigate(['login/evadmin']);
-          });
-      },
-      (err) => {
-        alert('Something Went Wrong');
-        this.router.navigate(['login/evadmin']);
-      }
-    );
-  }
-
-  //Register method for evregister
-  evadminregister(email: string, password: string) {
-    this.fireauth.createUserWithEmailAndPassword(email, password).then(
-      (authResult) => {
-        // Create a new EvAdminProfile instance
-        const uid = authResult.user?.uid || '';
-
-        // Define the opening and closing times as Time default
-        const openingTime: Time = { hours: 10, minutes: 0 }; // 10:00 AM
-        const closingTime: Time = { hours: 19, minutes: 0 }; // 7:00 PM
-
-        const evProfile: EvAdminProfile = {
-          id: '',
-          evid: '',
-          title: '',
-          description: '',
-          location: { city: '', state: '' },
-          coordinates: { latitude: '', longitude: '' },
-          address: '',
-          rate: 0,
-          evTimings: {
-            Monday: {
-              openingTime: openingTime,
-              closingTime: closingTime,
-            },
-            Tuesday: {
-              openingTime: openingTime,
-              closingTime: closingTime,
-            },
-            Wednesday: {
-              openingTime: openingTime,
-              closingTime: closingTime,
-            },
-            Thursday: {
-              openingTime: openingTime,
-              closingTime: closingTime,
-            },
-            Friday: {
-              openingTime: openingTime,
-              closingTime: closingTime,
-            },
-            Saturday: {
-              openingTime: openingTime,
-              closingTime: closingTime,
-            },
-            Sunday: {
-              openingTime: openingTime,
-              closingTime: closingTime,
-            },
-          },
-          imageUrl: '',
-          profile: {
-            firstname: '',
-            lastname: '',
-            dob: '',
-            mobile: '',
-            email: email, // Set email from the registration
-            dateofjoining: new Date().toISOString(),
-            profilepic: '',
-          },
-          updatedAt: '',
-          accountType: 'evadmin', // Set accountType to 'evadmin'
-          userid: uid, // Set the UID
-          accountStatus: {
-            approvedBy: '',
-            updatedAt: '',
-            adminID: '',
-            status: 'INACTIVE',
-            remark: '',
-          },
-        };
-
-        // Call the method to add the new EvAdminProfile to Firestore
-        this.addNewEvProfile(evProfile);
-
-        alert('Registration Successful');
-
-        // Navigate to the login page
-        this.router.navigate(['login/evadmin']);
-      },
-      (err) => {
-        alert(err.message);
-        this.router.navigate(['register/evadmin']);
-      }
-    );
-  }
-
-  // New Registering Add data as blank
-  addNewEvProfile(evprofile: EvAdminProfile) {
-    evprofile.id = this.afs.createId();
-    evprofile.evid = this.generateCustomId();
-    // Set email and accountType in the profile
-    evprofile.profile.email = evprofile.profile.email || '';
-    evprofile.accountType = 'evadmin';
-
-    // Use the evid as the document ID when adding to Firestore
-    return this.afs.collection('/Evstation').doc(evprofile.id).set(evprofile);
-  }
-
-  // Function to generate a custom ID
-  private generateCustomId(): string {
-    return `EV-${Math.floor(1000 + Math.random() * 90000)}`;
-  }
-
-  //check that user is already logged in
-  checkExistingSession(): void {
-    // Check if there is an existing session with the evadmin accountType
-    const existingSessionUser = this.sst.retrieve('user') as EvAdminProfile;
-
-    if (existingSessionUser && existingSessionUser.accountType === 'evadmin') {
-      // Redirect to dashboard since a valid session is already present
-      this.router.navigate(['admin/dashboard']);
-    } else {
-      this.router.navigate(['login/evadmin']);
-    }
-  }
-
-  //get current userid from session storage
-  getCurrentUserFromSession(): string | undefined {
-    // Check if there is an existing session with the evadmin accountType
-    const existingSessionUser = this.sst.retrieve('user') as EvAdminProfile;
-
-    if (existingSessionUser && existingSessionUser.accountType === 'evadmin') {
-      return existingSessionUser.userid;
-    } else {
-      // Handle the case where the user is not logged in or the account type is not 'evadmin'
-      return undefined;
-    }
-  }
-
-  //for authguard evadmin
-  checkEvAdminLoggedIn(): boolean {
-    // Check if there is an existing session with the evadmin accountType
-    const existingSessionUser = this.sst.retrieve('user') as EvAdminProfile;
-
-    // Return true if there is an existing session with evadmin accountType, otherwise return false
-    return !!(
-      existingSessionUser && existingSessionUser.accountType === 'evadmin'
-    );
-  }
-
-  //signout
-  logOutEvAdmin() {
-    this.fireauth.signOut().then(() => {
-      // Clear the session storage
-      this.sst.clear();
-
-      // Redirect to the login page
-      this.router.navigate(['login/evadmin']);
+  //register new user using email and password
+  registerUser(
+    email: string,
+    password: string,
+    confirmpassword: string
+  ): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/user/register`, {
+      email,
+      password,
+      confirmpassword,
     });
   }
 
-  //getSession that
-  getSession(): EvAdminProfile | undefined {
-    // Retrieve the user profile from session storage
-    const sessionUser = this.sst.retrieve('user') as EvAdminProfile;
-
-    // Check if the user is logged in and has the correct account type
-    if (sessionUser && sessionUser.accountType === 'evadmin') {
-      return sessionUser;
-    } else {
-      // Handle the case where the user is not logged in or has the wrong account type
-      return undefined;
-    }
+  // login to the user account and save session
+  loginUser(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/user/login`, {
+      email,
+      password,
+    });
   }
 
-  // Method to get EvAdminProfile data by userid
-  getEvAdminProfileByUserId(
-    userid: string
-  ): Observable<EvAdminProfile | undefined> {
-    return this.afs
-      .collection('/Evstation', (ref) => ref.where('userid', '==', userid))
-      .valueChanges({ idField: 'id' })
-      .pipe(
-        map((profiles: any[]) => {
-          if (profiles.length > 0) {
-            const profileData = profiles[0] as EvAdminProfile; // Cast to EvAdminProfile
-            const updatedProfile = {
-              ...profileData,
-              id: profileData.id,
-              updatedAt: new Date().toISOString(),
-            }; // Include 'id' and 'updatedAt' in the result
-            return updatedProfile;
-          } else {
-            return undefined;
-          }
-        })
-      );
+  //Get User Profile using userid [/:userid]
+  getUserProfileUsingID(userId: string): Observable<any> {
+    const url = `${this.baseUrl}/user/${userId}`;
+    return this.http.get<any>(url);
   }
 
-  //forgot password link send
-  async forgotPassword(email: string): Promise<void> {
-    return this.fireauth
-      .sendPasswordResetEmail(email)
-      .then(() => {
-        // Password reset email sent successfully
-        console.log('Password reset email sent successfully');
-        alert('Password reset email sent successfully');
-      })
-      .catch((error) => {
-        // Handle any errors that occurred during sending the password reset email
-        alert('Error sending password reset email:' + error);
-        console.error('Error sending password reset email:', error);
-        throw error; // Re-throw the error for the calling function to handle
-      });
-  }
+  //Upload Profile Image
+  uploadProfileImage(userId: string, file: File): Observable<any> {
+    const formData: FormData = new FormData();
+    formData.append('file', file, file.name);
+    const headers = new HttpHeaders();
+    headers.append('Content-Type', 'multipart/form-data');
+    headers.append('Accept', 'application/json');
 
-  /*******************************************************[Ev Station Admin End]***********************************************************/
-
-  //Ev Super Admin
-  /*******************************************************[Super Admin]***********************************************************/
-  adminLogin(email: string, password: string) {
-    this.fireauth.signInWithEmailAndPassword(email, password).then(
-      (authResult) => {
-        const uid = authResult.user?.uid || '';
-
-        // Check if the user with this UID exists in the Firestore collection
-        const userRef = this.afs.collection('/EvAdmin', (ref) =>
-          ref.where('adminId', '==', uid)
-        );
-
-        userRef
-          .get()
-          .toPromise()
-          .then((snapshot) => {
-            if (snapshot && !snapshot.empty) {
-              // User found, check the accountType
-              const user = snapshot.docs[0].data() as AdminProfileModel;
-
-              // Check if the UID matches the adminId
-              if (uid === user.adminId) {
-                if (
-                  user.accountType === 'superadmin' ||
-                  user.accountType === 'admin'
-                ) {
-                  // Save user information in session storage
-                  this.sst.store('admin', user);
-
-                  // Navigate to the dashboard
-                  this.router.navigate(['sadmin']);
-                } else {
-                  alert(
-                    'Unauthorized access. Only superadmin or admin allowed.'
-                  );
-                }
-              } else {
-                alert('UID does not match adminId.');
-              }
-            } else {
-              alert('User profile not found.');
-            }
-          })
-          .catch((err) => {
-            console.error('Error checking user profile:', err);
-            alert('Something went wrong.');
-            this.router.navigate(['login/admin']);
-          });
-      },
-      (err) => {
-        console.error('Error during login:', err);
-        alert('Something went wrong. Please check your credentials.');
-        this.router.navigate(['login/admin']);
+    return this.http.post<any>(
+      `${this.baseUrl}/user/upload/${userId}`,
+      formData,
+      {
+        headers: headers,
       }
     );
   }
 
-  //Get Admin Session
+  //Get User Session
   // Retrieve user session from sessionStorage
-  getAdminSession(): AdminProfileModel | null {
-    const userSession = this.sst.retrieve('admin') as AdminProfileModel;
+  getWebUserSession(): any {
+    const userSession = this.sst.retrieve('webuser');
+    return userSession || null;
+  }
+
+  //Check User Session to check user Logged in or not
+  //check that user is already logged in
+  checkExistingUserSession(): void {
+    // Check if there is an existing session with the evadmin accountType
+    const existingSessionUser = this.sst.retrieve('webuser');
+
+    if (existingSessionUser && existingSessionUser.accountType === 'user') {
+      // Redirect to dashboard since a valid session is already present
+      this.router.navigate(['user']);
+    }
+  }
+
+  //for authguard user
+  checkUserLoggedIn(): boolean {
+    // Check if there is an existing session with the admin accountType
+    const existingSessionUser = this.sst.retrieve('webuser');
+
+    // Return true if there is an existing session with superadmin or admin accountType, otherwise return false
+    return !!(
+      existingSessionUser && existingSessionUser.accountType === 'user'
+    );
+  }
+
+  //SignOut User
+  logOutUser() {
+    this.sst.clear();
+    // Redirect to the login page
+    this.router.navigate(['login/user']);
+  }
+
+  /***************************[EV Admin Authentication]*************************** */
+
+  //register new ev admin  using email and password
+  registerEvAdmin(
+    email: string,
+    password: string,
+    confirmpassword: string
+  ): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/admin/register`, {
+      email,
+      password,
+      confirmpassword,
+    });
+  }
+
+  // login to the user account and save session
+  loginEvAdmin(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/admin/login`, {
+      email,
+      password,
+    });
+  }
+
+  //Check EvAdmin Session to check Ev admin Logged in or not
+  //check that evadmin is already logged in
+  checkinExistingEvAdminSession(): void {
+    // Check if there is an existing session with the evadmin accountType
+    const existingSessionUser = this.sst.retrieve('evadmin');
+
+    if (existingSessionUser && existingSessionUser.accountType === 'EV Admin') {
+      // Redirect to dashboard since a valid session is already present
+      this.router.navigate(['admin']);
+    }
+  }
+
+  //Check ev admin Login
+  //for authguard evadmin
+  checkEvAdminLoggedIn(): boolean {
+    // Check if there is an existing session with the evadmin accountType
+    const existingSessionUser = this.sst.retrieve('evadmin');
+
+    // Return true if there is an existing session with evadmin accountType, otherwise return false
+    return !!(
+      existingSessionUser && existingSessionUser.accountType === 'EV Admin'
+    );
+  }
+
+  //Get EvAdmin Profile using userid [/:userid]
+  getAdminProfileUsingId(userId: string): Observable<any> {
+    const url = `${this.baseUrl}/admin/${userId}`;
+    return this.http.get<any>(url);
+  }
+
+  //Get EvAdmin Session
+  // Retrieve evadmin session from sessionStorage
+  getEvAdminSession(): any {
+    const userSession = this.sst.retrieve('evadmin');
+    return userSession || null;
+  }
+
+  //signout
+  logOutAdmin() {
+    // Clear the session storage
+    this.sst.clear();
+
+    // Redirect to the login page
+    this.router.navigate(['login/admin']);
+  }
+
+  logOutEvAdmin() {
+    // Clear the session storage
+    this.sst.clear();
+
+    // Redirect to the login page
+    this.router.navigate(['login/evadmin']);
+  }
+
+  /*******************************************************[Super Admin Authentication]***********************************************************/
+
+  adminLogin(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/superadmin/login`, {
+      email,
+      password,
+    });
+  }
+
+  //Get Admin Session
+  getAdminSession(): any | null {
+    const userSession = this.sst.retrieve('admin');
     return userSession || null;
   }
 
   //for authguard superadmin
   checkSuperAdminLoggedIn(): boolean {
-    // Check if there is an existing session with the admin accountType
-    const existingSessionUser = this.sst.retrieve('admin') as AdminProfileModel;
-
-    // Return true if there is an existing session with superadmin or admin accountType, otherwise return false
+    const existingSessionUser = this.sst.retrieve('admin');
     return !!(
-      existingSessionUser &&
-      (existingSessionUser.accountType === 'superadmin' ||
-        existingSessionUser.accountType === 'admin')
+      (existingSessionUser &&
+        (existingSessionUser.accountType === 'superadmin' ||
+          existingSessionUser.accountType === 'admin')) ||
+      existingSessionUser.accountType === 'Owner'
     );
   }
 
-  // Get Profile Using ID
-  async getAdminProfileUsingID(
-    adminID: string
-  ): Promise<AdminProfileModel | null> {
-    // Check if the admin with this ID exists in the Firestore collection
-    const userRef = this.afs.collection('/EvAdmin', (ref) =>
-      ref.where('adminId', '==', adminID)
-    );
-
-    return userRef
-      .get()
-      .toPromise()
-      .then((snapshot) => {
-        if (snapshot && !snapshot.empty) {
-          // Admin found, return the profile
-          const adminProfile = snapshot.docs[0].data() as AdminProfileModel;
-          return adminProfile;
-        } else {
-          // Admin not found
-          return null;
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting admin profile:', err);
-        return null;
-      });
+  //Get Admin Profile
+  getSuperAdminProfileUsingID(adminId: string): Observable<any> {
+    const url = `${this.baseUrl}/superadmin/${adminId}/profile`;
+    return this.http.get<any>(url);
   }
 
   //check that user is already logged in
   checkExistingAdminSession(): void {
     // Check if there is an existing session with the evadmin accountType
-    const existingSessionUser = this.sst.retrieve('admin') as EvAdminProfile;
+    const existingSessionUser = this.sst.retrieve('admin');
 
     if (
       (existingSessionUser &&
         existingSessionUser.accountType === 'superadmin') ||
-      existingSessionUser.accountType == 'admin'
+      existingSessionUser.accountType == 'admin' ||
+      existingSessionUser.accountType === 'Owner'
     ) {
       // Redirect to dashboard since a valid session is already present
       this.router.navigate(['sadmin']);
@@ -410,204 +228,5 @@ export class AuthService {
     }
   }
 
-  //signout
-  logOutAdmin() {
-    this.fireauth.signOut().then(() => {
-      // Clear the session storage
-      this.sst.clear();
-
-      // Redirect to the login page
-      this.router.navigate(['login/admin']);
-    });
-  }
   /*******************************************************[End Super Admin]***********************************************************/
-
-  /*******************************************************[Start User]***********************************************************/
-
-  //Register method for evregister
-  userregister(email: string, password: string) {
-    this.fireauth.createUserWithEmailAndPassword(email, password).then(
-      (authResult) => {
-        // Create a new EvAdminProfile instance
-        const uid = authResult.user?.uid || '';
-
-        const userProfile: UserProfile = {
-          email: email,
-          firstname: '',
-          lastname: '',
-          mobile: '',
-          dob: '',
-          address: '',
-          location: { city: '', state: '' },
-          accountType: 'user',
-          userid: uid,
-          updatedDate: new Date().toISOString(),
-          createdDate: new Date().toISOString(),
-          profilepic: '',
-          id: '',
-        };
-
-        // Call the method to add the new EvAdminProfile to Firestore
-        this.addNewUser(userProfile);
-
-        alert('Registration Successful');
-
-        // Navigate to the login page
-        this.router.navigate(['login/user']);
-      },
-      (err) => {
-        alert(err.message);
-        this.router.navigate(['register/user']);
-      }
-    );
-  }
-
-  // New Registering Add data as blank
-  addNewUser(userprofile: UserProfile) {
-    userprofile.id = this.afs.createId();
-    // Use the id as the document ID when adding to Firestore
-    return this.afs
-      .collection('/UserProfile')
-      .doc(userprofile.id)
-      .set(userprofile);
-  }
-
-  //user login and save session
-  userLogin(email: string, password: string) {
-    this.fireauth.signInWithEmailAndPassword(email, password).then(
-      (authResult) => {
-        const uid = authResult.user?.uid || '';
-
-        // Check if the user with this UID exists in the Firestore collection
-        const userRef = this.afs.collection('/UserProfile', (ref) =>
-          ref.where('userid', '==', uid)
-        );
-
-        userRef
-          .get()
-          .toPromise()
-          .then((snapshot) => {
-            if (snapshot && !snapshot.empty) {
-              // User found, check the accountType
-              const user = snapshot.docs[0].data() as UserProfile;
-              if (user.accountType === 'user') {
-                // Save user information in session storage
-                this.sst.store('webuser', user);
-
-                // Navigate to the dashboard
-                this.router.navigate(['/']);
-              } else {
-                alert('Unauthorized access. Only logged in user allowed.');
-              }
-            } else {
-              alert('User profile not found.');
-            }
-          })
-          .catch((err) => {
-            console.error('Error checking user profile:', err);
-            alert('Something went wrong.');
-            this.router.navigate(['login/user']);
-          });
-      },
-      (err) => {
-        alert('Something Went Wrong');
-        this.router.navigate(['login/user']);
-      }
-    );
-  }
-
-  //get the user session
-  // Retrieve user session from sessionStorage
-  getWebUserSession(): UserProfile | null {
-    const userSession = this.sst.retrieve('webuser') as UserProfile;
-    return userSession || null;
-  }
-
-  //check that user is already logged in
-  checkExistingUserSession(): void {
-    // Check if there is an existing session with the evadmin accountType
-    const existingSessionUser = this.sst.retrieve('webuser') as EvAdminProfile;
-
-    if (existingSessionUser && existingSessionUser.accountType === 'user') {
-      // Redirect to dashboard since a valid session is already present
-      this.router.navigate(['user']);
-    } else {
-      this.router.navigate(['login/user']);
-    }
-  }
-
-  // Get Profile Using ID
-  async getUserProfileUsingID(userid: string): Promise<UserProfile | null> {
-    // Check if the admin with this ID exists in the Firestore collection
-    const userRef = this.afs.collection('/UserProfile', (ref) =>
-      ref.where('userid', '==', userid)
-    );
-
-    return userRef
-      .get()
-      .toPromise()
-      .then((snapshot) => {
-        if (snapshot && !snapshot.empty) {
-          // user found, return the profile
-          const userProfile = snapshot.docs[0].data() as UserProfile;
-          return userProfile;
-        } else {
-          // user not found
-          return null;
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting user profile:', err);
-        return null;
-      });
-  }
-
-  async getUserUsingID(userid: string): Promise<UserProfile | null> {
-    // Check if the admin with this ID exists in the Firestore collection
-    const userRef = this.afs.collection('/UserProfile', (ref) =>
-      ref.where('id', '==', userid)
-    );
-
-    return userRef
-      .get()
-      .toPromise()
-      .then((snapshot) => {
-        if (snapshot && !snapshot.empty) {
-          // user found, return the profile
-          const userProfile = snapshot.docs[0].data() as UserProfile;
-          return userProfile;
-        } else {
-          // user not found
-          return null;
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting user profile:', err);
-        return null;
-      });
-  }
-
-  //signout
-  logOutUser() {
-    this.fireauth.signOut().then(() => {
-      // Clear the session storage
-      this.sst.clear();
-
-      // Redirect to the login page
-      this.router.navigate(['login/user']);
-    });
-  }
-
-  //for authguard user
-  checkUserLoggedIn(): boolean {
-    // Check if there is an existing session with the admin accountType
-    const existingSessionUser = this.sst.retrieve('webuser') as UserProfile;
-
-    // Return true if there is an existing session with superadmin or admin accountType, otherwise return false
-    return !!(
-      existingSessionUser && existingSessionUser.accountType === 'user'
-    );
-  }
 }
-
-/*******************************************************[End User]***********************************************************/

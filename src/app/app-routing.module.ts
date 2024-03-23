@@ -11,8 +11,13 @@ import { AuthGuard } from './guards/auth.guard';
 import { SauthGuard } from './guards/sauth.guard';
 import { EvdetailspageComponent } from './components/evdetailspage/evdetailspage.component';
 import { UserAuthGuard } from './guards/userauth.guard';
+import { AboutusComponent } from './components/aboutus/aboutus.component';
+import { ContactusComponent } from './components/contactus/contactus.component';
 
 const routes: Routes = [
+  { path: 'about', component: AboutusComponent },
+  { path: 'contact', component: ContactusComponent },
+
   { path: '', component: HomeComponent },
   // User
   { path: 'login/user', component: LoginComponent },

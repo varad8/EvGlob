@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { AuthService } from '../../../../shared/auth.service';
 import { AdminserviceService } from '../../../../EvDataService/adminservice.service';
-import { EvAdminProfile } from '../../../../model/ev-admin-profile';
+import { environment } from '../../../../../environments/environment.development';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -19,7 +19,8 @@ import { EvAdminProfile } from '../../../../model/ev-admin-profile';
   styleUrl: './admin-dashboard.component.css',
 })
 export class AdminDashboardComponent {
-  evAdminProfile: EvAdminProfile | undefined;
+  private baseUrl = environment.BASE_URL;
+  evAdminProfile: any | undefined;
   isMobile: boolean = false;
   isSidebarOpen: boolean = false;
 
@@ -69,23 +70,17 @@ export class AdminDashboardComponent {
 
   ngOnInit() {
     // Fetch EvAdminProfile data
-    // Check if there is an existing session with the evadmin accountType
-    const sessionUser = this.authService.getSession();
-    if (sessionUser && sessionUser.accountType === 'evadmin') {
-      this.authService
-        .getEvAdminProfileByUserId(sessionUser.userid)
-        .subscribe((profile) => {
-          if (profile) {
-            this.evAdminProfile = profile;
-            console.log(this.evAdminProfile);
-          } else {
-            console.error('User not found or not logged in');
-          }
-        });
-      // this.evAdminProfile = sessionUser;
-      // console.log(this.evAdminProfile);
-    } else {
-      console.error('User not logged in');
+    const sessionUser = this.authService.getEvAdminSession();
+    if (sessionUser) {
+      this.authService.getAdminProfileUsingId(sessionUser.userid).subscribe(
+        (data) => {
+          this.evAdminProfile = data[0];
+        },
+        (error) => {
+          console.error('Error fetching user data:', error);
+          // Handle error
+        }
+      );
     }
   }
 
@@ -118,5 +113,10 @@ export class AdminDashboardComponent {
     if (this.isMobile) {
       this.isSidebarOpen = false;
     }
+  }
+
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/admin/image/${filename}`;
   }
 }

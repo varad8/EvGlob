@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../shared/auth.service';
+import { Router } from '@angular/router';
+import { SessionStorageService } from 'ngx-webstorage';
+import { UserservicesService } from '../../UserDataService/userservices.service';
 
 @Component({
   selector: 'app-login',
@@ -12,59 +15,55 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
 
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private sst: SessionStorageService,
+    private userservice: UserservicesService
+  ) {}
 
-  userLogin() {
-    if (this.email == '') {
-      alert('Please enter email');
-      return;
-    }
-    if (this.password == '') {
-      alert('Please enter password');
-      return;
-    }
-    if (this.password.length < 6) {
-      alert('Password at least six character long');
-      return;
-    }
+  userLogin(): void {
+    this.auth.loginUser(this.email, this.password).subscribe(
+      (response) => {
+        console.log('Registration successful', response);
+        alert(response.message);
 
-    //evlogin method call
-    this.auth.userLogin(this.email, this.password);
-    this.email = '';
-    this.password = '';
+        console.log(response.profile);
+
+        console.log(response);
+        // Save user information in session storage
+        this.sst.store('webuser', response.profile);
+
+        // // Navigate to the dashboard
+        this.router.navigate(['/']);
+      },
+      (error) => {
+        console.error('Registration failed', error.error);
+        alert(error.error.error);
+        // Handle error, e.g., display an error message
+      }
+    );
   }
+
   ngOnInit(): void {
     // Check for an existing session when the component is initialized
     this.auth.checkExistingUserSession();
   }
 
   //forgot password
-  forgotPasswordUsingEmail() {
+  forgotPasswordUsingEmail(): void {
     // Check if the email is not empty and is in a valid format
-    if (this.femail.trim() !== '' && this.isValidEmail(this.femail)) {
-      console.log(this.femail);
-      this.auth
-        .forgotPassword(this.femail)
-        .then(() => {
-          this.showForgotPasswordModal = false;
-          this.femail = ''; // Clear the email field after sending the reset email
-        })
-        .catch((error) => {
-          console.error('Error sending password reset email:', error);
-        });
-    } else {
-      // Handle invalid email format
-      console.log('Invalid email format');
-      alert('Invalid email');
-      // You can display an error message to the user or perform other actions as needed
-    }
-  }
-
-  // Method to validate email format
-  isValidEmail(email: string): boolean {
-    // Regular expression for email validation
-    const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    this.userservice.forgotPassword(this.femail).subscribe(
+      (response) => {
+        alert(response.message);
+        this.showForgotPasswordModal = false;
+        this.femail = '';
+        this.router.navigate(['/login/user']);
+      },
+      (error) => {
+        alert(error.error.error);
+      }
+    );
   }
 
   openForgotPasswordModal() {

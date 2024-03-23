@@ -1,14 +1,9 @@
 import { Component } from '@angular/core';
-import { AdminserviceService } from '../../../../EvDataService/adminservice.service';
-import { EvAdminProfile } from '../../../../model/ev-admin-profile';
 import { AuthService } from '../../../../shared/auth.service';
-import { Bookingmodel } from '../../../../model/bookingmodel';
-import {
-  Chart,
-  ChartConfiguration,
-  ChartDataset,
-  ChartOptions,
-} from 'chart.js';
+import { Chart } from 'chart.js';
+import { AdminservicesService } from '../../../../AdminDataService/adminservices.service';
+import { UserservicesService } from '../../../../UserDataService/userservices.service';
+import { environment } from '../../../../../environments/environment.development';
 
 @Component({
   selector: 'app-sanalytics',
@@ -16,313 +11,297 @@ import {
   styleUrl: './sanalytics.component.css',
 })
 export class SanalyticsComponent {
-  inactiveAccountsCount: number = 0;
-  activeAccountsCount: number = 0;
-  userregisteredCount: number = 0;
-  inactiveProfiles: EvAdminProfile[] = [];
-  activeProfiles: EvAdminProfile[] = [];
-  bookings: Bookingmodel[] = [];
+  private baseUrl = environment.BASE_URL;
+  countdata: any;
+  bookingsData: any;
+  session: any;
+  chart: any = [];
+  payementData: any;
+  pchart: any = [];
+  inactiveProfiles: any;
+  activeProfiles: any;
 
   constructor(
-    private adminService: AdminserviceService,
+    private suadmin: AdminservicesService,
+    private userservice: UserservicesService,
     private auth: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.getInactiveAccountsCount();
-    this.getUserregisteredCount();
-    this.getAllInActiveProfiles();
-    this.getActiveAccountsCount();
-    this.getAllActiveProfiles();
-    this.populateChart();
-    this.populateBookingCountChart();
-  }
-
-  getInactiveAccountsCount(): void {
-    this.adminService.getCountOfInactiveAccounts().subscribe(
-      (count) => {
-        this.inactiveAccountsCount = count;
-      },
-      (error) => {
-        console.error('Error getting inactive accounts count:', error);
-      }
-    );
-  }
-
-  getActiveAccountsCount(): void {
-    this.adminService.getCountOfActiveAccounts().subscribe(
-      (count) => {
-        this.activeAccountsCount = count;
-      },
-      (error) => {
-        console.error('Error getting inactive accounts count:', error);
-      }
-    );
-  }
-
-  getUserregisteredCount(): void {
-    this.adminService.getCountOfUserProfiles().subscribe(
-      (count) => {
-        this.userregisteredCount = count;
-      },
-      (error) => {
-        console.error('Error getting user accounts count:', error);
-      }
-    );
-  }
-
-  getAllInActiveProfiles(): void {
-    this.adminService.getAllInactiveProfiles().subscribe(
-      (profiles) => {
-        this.inactiveProfiles = profiles;
-      },
-      (error) => {
-        console.error('Error getting inactive profiles:', error);
-      }
-    );
-  }
-
-  getAllActiveProfiles(): void {
-    this.adminService.getAllactiveProfiles().subscribe(
-      (profiles) => {
-        this.activeProfiles = profiles;
-      },
-      (error) => {
-        console.error('Error getting inactive profiles:', error);
-      }
-    );
-  }
-
-  approveProfile(profiledata: EvAdminProfile): void {
     const sessionUser = this.auth.getAdminSession();
-    const ap = sessionUser.firstName + ' ' + sessionUser.lastName;
-    this.adminService
-      .approveProfile(
-        profiledata.id,
-        sessionUser.adminId,
-        ap,
-        'Approved',
-        'ACTIVE'
-      )
-      .then(() => {
-        console.log('Profile approved successfully.');
-        // Optionally, you can update the list of inactive profiles here or perform any other action.
-      })
-      .catch((error) => {
-        console.error('Error approving profile:', error);
-      });
+    if (sessionUser) {
+      this.auth.getSuperAdminProfileUsingID(sessionUser.adminId).subscribe(
+        (data) => {
+          this.session = data.profile;
+        },
+        (error) => {
+          console.error('Error fetching user data:', error);
+        }
+      );
+    }
+
+    this.getBookings();
+    this.getPaymentsData();
+    this.getCountData();
+    this.getAllEvStationData();
   }
 
-  disapproveProfile(profiledata: EvAdminProfile): void {
-    const sessionUser = this.auth.getAdminSession();
-    const ap = sessionUser.firstName + ' ' + sessionUser.lastName;
-    this.adminService
-      .approveProfile(
-        profiledata.id,
-        sessionUser.adminId,
-        ap,
-        'Disapproved by owner',
-        'INACTIVE'
-      )
-      .then(() => {
-        console.log('Profile disapproved successfully.');
-        // Optionally, you can update the list of inactive profiles here or perform any other action.
-      })
-      .catch((error) => {
-        console.error('Error disapproving profile:', error);
-      });
+  getAllEvStationData() {
+    // Get All Evstations
+    this.userservice.getAllEvStations().subscribe(
+      (data: any[]) => {
+        // Filter active stations based on accountStatus
+        this.activeProfiles = data.filter(
+          (station) => station.accountStatus?.status === 'ACTIVE'
+        );
+
+        // Filter inactive stations based on accountStatus
+        this.inactiveProfiles = data.filter(
+          (station) => station.accountStatus?.status === 'NOT ACTIVE'
+        );
+
+        // Retrieve ratings for active stations
+        this.activeProfiles.forEach((station) => {
+          this.getRatings(station);
+        });
+
+        // Retrieve ratings for inactive stations
+        this.inactiveProfiles.forEach((station) => {
+          this.getRatings(station);
+        });
+      },
+      (error) => {
+        console.error('Error fetching EV stations:', error);
+      }
+    );
   }
 
-  chartData: any[] = [];
-  chartLabels: string[] = [];
-  chartColors: any[] = [];
+  getRatings(station: any) {
+    this.userservice.getRatingsOfStation(station.userid).subscribe(
+      (data: any) => {
+        station.averageRating = data.averageRating;
+      },
+      (error) => {
+        station.averageRating = 0;
+      }
+    );
+  }
 
-  chartDataa: any[] = [];
-  chartLabelss: string[] = [];
-  chartColorss: any[] = [];
+  getCountData(): void {
+    this.suadmin.getBookingCount().subscribe(
+      (data: any) => {
+        // Handle data here
+        this.countdata = data;
+      },
+      (error: any) => {
+        console.error('Error fetching bookings:', error);
+      }
+    );
+  }
 
-  populateChart() {
-    // Fetch data and update chart options here
-    this.adminService.getAllBookings().subscribe((bookings: Bookingmodel[]) => {
-      console.log('Fetched bookings:', bookings); // Log fetched bookings to console
+  // Function to fetch bookings
+  getBookings(): void {
+    this.suadmin.getBookingChartData().subscribe(
+      (data: any) => {
+        // Handle data here
+        this.bookingsData = data;
+        this.generateBookingChart();
+      },
+      (error: any) => {
+        console.error('Error fetching bookings:', error);
+      }
+    );
+  }
 
-      // Initialize object to store aggregated totals for each station, month, and year
-      const stationMonthYearTotals: { [key: string]: number } = {};
+  //Function to fetch payment data
+  getPaymentsData(): void {
+    this.suadmin.getPaymentChartData().subscribe(
+      (data: any) => {
+        // Handle data here
+        this.payementData = data;
+        this.genratePaymentChart();
+      },
+      (error: any) => {
+        console.error('Error fetching bookings:', error);
+      }
+    );
+  }
 
-      // Calculate total amount paid per month for each station
-      bookings.forEach((booking) => {
-        const date = new Date(booking.bookedForDate);
-        const month = date.getMonth() + 1; // Months in JavaScript are 0-indexed
-        const year = date.getFullYear().toString();
-        const stationId = booking.stationId;
+  generateBookingChart() {
+    // Initialize arrays to store labels, datasets, and station IDs
+    const labels = [];
+    const datasets = [];
+    const stationIds = [];
 
-        // Create a unique key combining stationId, month, and year
-        const key = `${stationId}_${year}_${month}`;
+    // Loop through each item in this.bookingsData
+    this.bookingsData.forEach((item) => {
+      const stationId = item.stationId;
+      const data = item.data;
 
-        // Update or initialize totalPayable for this combination
-        if (!stationMonthYearTotals[key]) {
-          stationMonthYearTotals[key] = 0;
+      // Add station ID to stationIds array if not already present
+      if (!stationIds.includes(stationId)) {
+        stationIds.push(stationId);
+      }
+
+      // Loop through each data entry for the current station
+      data.forEach((entry) => {
+        const count = entry.count;
+        const label = entry.label;
+        const title = entry.title; // New title property
+
+        // Add label to labels array if not already present
+        if (!labels.includes(label)) {
+          labels.push(label);
         }
-        stationMonthYearTotals[key] += booking.totalPayable;
-      });
 
-      // Extract data for chart labels and series
-      const chartData: any[] = [];
-      const chartLabels: string[] = [];
-      const chartColors: string[] = [];
-
-      // Group bookings by station ID
-      const groupedBookings: { [key: string]: Bookingmodel[] } = {};
-      bookings.forEach((booking) => {
-        if (!groupedBookings[booking.stationId]) {
-          groupedBookings[booking.stationId] = [];
+        // Find or create dataset for the current station
+        let dataset = datasets.find(
+          (d) => d.label === `${stationId} - ${title}`
+        );
+        if (!dataset) {
+          dataset = {
+            label: `${stationId} - ${title}`, // Updated label to include both stationId and title
+            data: [],
+            backgroundColor: this.getRandomColor(),
+            borderColor: this.getRandomColor(),
+            borderWidth: 1,
+          };
+          datasets.push(dataset);
         }
-        groupedBookings[booking.stationId].push(booking);
+
+        // Find index of the label in the labels array
+        const index = labels.indexOf(label);
+
+        // Fill in zeros for months where data is missing for the current station
+        while (dataset.data.length < index) {
+          dataset.data.push(0);
+        }
+
+        // Add count to the dataset for the current label
+        dataset.data.push(count);
       });
+    });
 
-      // Generate colors for each station ID
-      const stationColors: { [key: string]: string } = {};
-      Object.keys(groupedBookings).forEach((stationId, index) => {
-        stationColors[stationId] = this.getRandomColor();
+    // Create the chart
+    this.chart = new Chart('canvas', {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: datasets,
+      },
+      options: {
+        scales: {
+          y: {
+            type: 'linear',
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  }
+  genratePaymentChart() {
+    // Initialize arrays to store labels, datasets, and station IDs
+    const labels = [];
+    const datasets = [];
+
+    // Loop through each item in this.payementData
+    this.payementData.forEach((item) => {
+      const stationId = item.stationId;
+      const title = item.title;
+      const data = item.data;
+
+      // Loop through each data entry for the current station
+      data.forEach((entry) => {
+        const value = parseFloat(entry.data);
+        const label = entry.label;
+
+        // Add label to labels array if not already present
+        if (!labels.includes(label)) {
+          labels.push(label);
+        }
+
+        // Find or create dataset for the current station
+        let dataset = datasets.find(
+          (d) => d.label === `${stationId} - ${title}`
+        );
+        if (!dataset) {
+          dataset = {
+            label: `${stationId} - ${title}`,
+            data: [],
+            borderWidth: 1,
+            borderColor: this.getRandomColor(),
+          };
+          datasets.push(dataset);
+        }
+
+        // Find index of the label in the labels array
+        const index = labels.indexOf(label);
+
+        // Fill in zeros for months where data is missing for the current station
+        while (dataset.data.length < index) {
+          dataset.data.push(0);
+        }
+
+        // Add value to the dataset for the current label
+        dataset.data.push(value);
       });
+    });
 
-      // Iterate over station-month-year totals and populate chart data and labels
-      Object.keys(stationMonthYearTotals).forEach((key) => {
-        const [stationId, year, month] = key.split('_');
-        const totalPayable = stationMonthYearTotals[key];
-
-        // Format month and year for the label
-        const monthYearLabel = `${this.getMonthName(
-          parseInt(month)
-        )} ${year} - Station ID: ${stationId}`;
-
-        // Dynamically calculate the height based on the total payable amount
-        const height = totalPayable * 0.1; // You can adjust the scaling factor as needed
-
-        // Push data to chart arrays
-        chartData.push({ y: totalPayable, height: height });
-        chartLabels.push(monthYearLabel);
-        chartColors.push(stationColors[stationId]);
-      });
-
-      // Update chart data, labels, and colors
-      this.chartData = [{ data: chartData, label: 'Total Payable' }];
-      this.chartLabels = chartLabels;
-      this.chartColors = [{ backgroundColor: chartColors }];
-
-      console.log(this.chartData);
-      console.log(this.chartLabels);
+    // Create the chart
+    this.pchart = new Chart('canvas2', {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: datasets,
+      },
+      options: {
+        scales: {
+          y: {
+            type: 'linear',
+            beginAtZero: true,
+          },
+        },
+      },
     });
   }
 
-  // Function to generate a random color
-  getRandomColor(): string {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+  // Function to generate a random RGBA color
+  getRandomColor() {
+    const r = Math.floor(Math.random() * 128); // Red component between 0 and 127
+    const g = Math.floor(Math.random() * 128); // Green component between 0 and 127
+    const b = Math.floor(Math.random() * 128); // Blue component between 0 and 127
+    const a = Math.random().toFixed(2); // Random alpha value between 0 and 1
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
   }
 
-  // Function to generate random colors
-  generateColors(numColors: number): string[] {
-    const colors = [];
-    for (let i = 0; i < numColors; i++) {
-      const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(
-        Math.random() * 256
-      )}, ${Math.floor(Math.random() * 256)}, 0.7)`;
-      colors.push(color);
-    }
-    return colors;
-  }
-
-  // Function to get month name
-  getMonthName(monthNumber: number): string {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return months[monthNumber - 1];
-  }
-
-  populateBookingCountChart() {
-    this.adminService.getAllBookings().subscribe((bookings: Bookingmodel[]) => {
-      console.log('Fetched bookings:', bookings); // Log fetched bookings to console
-
-      // Initialize object to store booking counts for each station, month, and year
-      const stationMonthYearCounts: { [key: string]: number } = {};
-
-      // Calculate booking count per month for each station
-      bookings.forEach((booking) => {
-        const date = new Date(booking.bookedForDate);
-        const month = date.getMonth() + 1; // Months in JavaScript are 0-indexed
-        const year = date.getFullYear().toString();
-        const stationId = booking.stationId;
-
-        // Create a unique key combining stationId, month, and year
-        const key = `${stationId}_${year}_${month}`;
-
-        // Update or initialize booking count for this combination
-        if (!stationMonthYearCounts[key]) {
-          stationMonthYearCounts[key] = 0;
+  disapproveProfile(profile: any) {
+    this.suadmin
+      .disapproveEvAdmin(this.session.adminId, profile.userid)
+      .subscribe(
+        (response) => {
+          this.getAllEvStationData();
+          alert(response.message);
+        },
+        (error) => {
+          alert(error.error.error);
         }
-        stationMonthYearCounts[key]++;
-      });
+      );
+  }
 
-      // Extract data for chart labels and series
-      const chartData: any[] = [];
-      const chartLabels: string[] = [];
-      const chartColors: string[] = [];
+  approveProfile(profile: any) {
+    this.suadmin.approveEvAdmin(this.session.adminId, profile.userid).subscribe(
+      (response) => {
+        this.getAllEvStationData();
+        alert(response.message);
+      },
+      (error) => {
+        alert(error.error.error);
+      }
+    );
+  }
 
-      // Group bookings by station ID
-      const groupedBookings: { [key: string]: Bookingmodel[] } = {};
-      bookings.forEach((booking) => {
-        if (!groupedBookings[booking.stationId]) {
-          groupedBookings[booking.stationId] = [];
-        }
-        groupedBookings[booking.stationId].push(booking);
-      });
-
-      // Generate colors for each station ID
-      const stationColors: { [key: string]: string } = {};
-      Object.keys(groupedBookings).forEach((stationId, index) => {
-        stationColors[stationId] = this.getRandomColor();
-      });
-
-      // Iterate over station-month-year counts and populate chart data and labels
-      Object.keys(stationMonthYearCounts).forEach((key) => {
-        const [stationId, year, month] = key.split('_');
-        const count = stationMonthYearCounts[key];
-
-        // Format month and year for the label
-        const monthYearLabel = `${this.getMonthName(
-          parseInt(month)
-        )} ${year} - Station ID: ${stationId}`;
-
-        // Push data to chart arrays
-        chartData.push(count);
-        chartLabels.push(monthYearLabel);
-        chartColors.push(stationColors[stationId]);
-      });
-
-      // Update chart data, labels, and colors
-      this.chartDataa = [{ data: chartData, label: 'Booking Count' }];
-      this.chartLabelss = chartLabels;
-      this.chartColorss = [{ backgroundColor: chartColors }];
-
-      console.log(this.chartDataa);
-      console.log(this.chartLabelss);
-    });
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/admin/image/${filename}`;
   }
 }

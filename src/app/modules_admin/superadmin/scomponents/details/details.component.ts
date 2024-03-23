@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { EvAdminProfile } from '../../../../model/ev-admin-profile';
-import { AdminserviceService } from '../../../../EvDataService/adminservice.service';
-import { AuthService } from '../../../../shared/auth.service';
+import { UserservicesService } from '../../../../UserDataService/userservices.service';
+import { environment } from '../../../../../environments/environment.development';
 type DayOfWeek =
   | 'Monday'
   | 'Tuesday'
@@ -18,28 +17,27 @@ type DayOfWeek =
   styleUrl: './details.component.css',
 })
 export class DetailsComponent {
+  private baseUrl = environment.BASE_URL;
   stationid: any = '';
-  evAdminProfile: EvAdminProfile | undefined;
+  evAdminProfile: any;
 
   constructor(
     private route: ActivatedRoute,
-    private evdataservice: AdminserviceService
+    private evdataservice: UserservicesService
   ) {}
 
   ngOnInit(): void {
     this.stationid = this.route.snapshot.paramMap.get('stationid');
-
     if (this.stationid) {
-      this.evdataservice
-        .getEvAdminProfileByUserId(this.stationid)
-        .subscribe((profile) => {
-          if (profile) {
-            this.evAdminProfile = profile;
-            console.log(this.evAdminProfile);
-          }
-        });
-    } else {
-      console.error('Error Getting details');
+      this.evdataservice.getEvStationByUserId(this.stationid).subscribe(
+        (data) => {
+          this.evAdminProfile = data[0];
+        },
+        (error) => {
+          console.error('Error fetching station data:', error);
+          // Handle error as needed
+        }
+      );
     }
   }
 
@@ -63,5 +61,10 @@ export class DetailsComponent {
 
     // Return the time string in 'HH:mm' format
     return `${formattedHours}:${formattedMinutes}`;
+  }
+
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/user/image/${filename}`;
   }
 }

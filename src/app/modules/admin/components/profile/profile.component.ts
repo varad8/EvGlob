@@ -1,7 +1,7 @@
 import { Component, Pipe, PipeTransform } from '@angular/core';
 import { AdminserviceService } from '../../../../EvDataService/adminservice.service';
-import { EvAdminProfile } from '../../../../model/ev-admin-profile';
 import { AuthService } from '../../../../shared/auth.service';
+import { environment } from '../../../../../environments/environment.development';
 type DayOfWeek =
   | 'Monday'
   | 'Tuesday'
@@ -17,7 +17,8 @@ type DayOfWeek =
   styleUrl: './profile.component.css',
 })
 export class ProfileComponent {
-  evAdminProfile: EvAdminProfile | undefined;
+  evAdminProfile: any | undefined;
+  private baseUrl = environment.BASE_URL;
 
   constructor(
     private evdataservice: AdminserviceService,
@@ -26,25 +27,28 @@ export class ProfileComponent {
 
   ngOnInit() {
     // Fetch EvAdminProfile data
-    // Check if there is an existing session with the evadmin accountType
-    const sessionUser = this.auth.getSession();
-    if (sessionUser && sessionUser.accountType === 'evadmin') {
-      this.auth
-        .getEvAdminProfileByUserId(sessionUser.userid)
-        .subscribe((profile) => {
-          if (profile) {
-            this.evAdminProfile = profile;
-            console.log(this.evAdminProfile);
-          } else {
-            console.error('User not found or not logged in');
-          }
-        });
-      // this.evAdminProfile = sessionUser;
-      // console.log(this.evAdminProfile);
-    } else {
-      console.error('User not logged in');
+    const sessionUser = this.auth.getEvAdminSession();
+    if (sessionUser) {
+      this.auth.getAdminProfileUsingId(sessionUser.userid).subscribe(
+        (data) => {
+          this.evAdminProfile = data[0];
+          // this.userProfile.dob = this.formatDate(this.userProfile.dob);
+          this.evAdminProfile.updatedAt = this.convertTimestampToReadable(
+            this.evAdminProfile.updatedAt
+          );
+          this.evAdminProfile.profile.dateofjoining =
+            this.convertTimestampToReadable(
+              this.evAdminProfile.profile.dateofjoining
+            );
+        },
+        (error) => {
+          console.error('Error fetching user data:', error);
+          // Handle error
+        }
+      );
     }
   }
+
   getDayOfWeek(): DayOfWeek[] {
     return [
       'Monday',
@@ -65,5 +69,15 @@ export class ProfileComponent {
 
     // Return the time string in 'HH:mm' format
     return `${formattedHours}:${formattedMinutes}`;
+  }
+
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/admin/image/${filename}`;
+  }
+
+  convertTimestampToReadable(timestamp: string): string {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-US', { timeZone: 'UTC' });
   }
 }

@@ -7,6 +7,7 @@ import { PaymentsComponent } from './components/payments/payments.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { FeedbackComponent } from './components/feedback/feedback.component';
+import { NotificationsComponent } from './components/notifications/notifications.component';
 
 const routes: Routes = [
   {
@@ -19,6 +20,7 @@ const routes: Routes = [
       { path: 'profile', component: ProfileComponent },
       { path: 'ratings', component: FeedbackComponent },
       { path: 'settings', component: SettingsComponent },
+      { path: 'notifications', component: NotificationsComponent },
     ],
   },
 ];

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { UserservicesService } from '../../UserDataService/userservices.service';
-import { EvAdminProfile } from '../../model/ev-admin-profile';
+import { environment } from '../../../environments/environment.development';
 
 @Component({
   selector: 'app-evcard',
@@ -8,21 +8,43 @@ import { EvAdminProfile } from '../../model/ev-admin-profile';
   styleUrl: './evcard.component.css',
 })
 export class EvcardComponent {
+  private baseUrl = environment.BASE_URL;
   constructor(private userdata: UserservicesService) {}
-  station: EvAdminProfile[] = []; // Define the type as EvAdminProfile[]
+  station: any;
 
   pageSize = 4; // Number of stations to display per page
   currentPage = 1; // Current page
   activeIndex = -1; // Index of the active card
 
   ngOnInit(): void {
-    // Call the method to fetch EV admin profiles
-    this.userdata.getEvAdminProfiles().subscribe(
-      (profiles: EvAdminProfile[]) => {
-        this.station = profiles; // Assign fetched profiles to the station array
+    //Get All Evstations
+    this.userdata.getAllEvStations().subscribe(
+      (data: any[]) => {
+        // Filter active stations based on accountStatus
+        this.station = data.filter(
+          (station) => station.accountStatus?.status === 'ACTIVE'
+        );
+
+        console.log(this.station);
+
+        this.station.forEach((station) => {
+          this.getRatings(station);
+        });
       },
       (error) => {
-        console.error('Error fetching EV admin profiles:', error);
+        console.log('Error fetching EV stations:', error);
+      }
+    );
+  }
+
+  getRatings(station: any) {
+    station.averageRating = 0;
+    this.userdata.getRatingsOfStation(station.userid).subscribe(
+      (data: any) => {
+        station.averageRating = data.averageRating;
+      },
+      (error) => {
+        console.log(error);
       }
     );
   }
@@ -60,5 +82,9 @@ export class EvcardComponent {
     }
     const { openingTime, closingTime } = event.evTimings[day];
     return `${day}: ${openingTime} - ${closingTime}`;
+  }
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/user/image/${filename}`;
   }
 }

@@ -23,7 +23,8 @@
             <div class="flex flex-col gap-5.5 p-6.5">
 
                 <div class="mt-5 flex items-center justify-center">
-                    <img [src]="userProfile.profilepic" class="rounded-full w-20 h-20 border border-stroke">
+                    <img [src]="getProfileImageUrl(userProfile.profilepic)"
+                        class="rounded-full w-20 h-20 border border-stroke">
                 </div>
 
                 <!-- For First Name and Last Name  -->
@@ -44,8 +45,8 @@
                     </div>
                 </div>
 
-                <!-- For Email and Mobile -->
-                <div class="mt-5 grid md:grid-cols-2 md:gap-6">
+                <!-- For Email and Mobile and Gender -->
+                <div class="mt-5 grid md:grid-cols-3 md:gap-6">
                     <div class="relative z-0 w-full mb-5 group">
                         <input type="email" [(ngModel)]="userProfile.email" class="floating-input peer" disabled
                             name="email" id="email" />
@@ -58,6 +59,14 @@
                         <label for="mobile"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Mobile
                             No</label>
+                    </div>
+
+                    <div class="relative z-0 w-full mb-5 group">
+                        <input [(ngModel)]="userProfile.gender" type="text" class="floating-input peer" placeholder=" "
+                            disabled name="gender" id="gender" />
+                        <label for="gender"
+                            class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Gender
+                        </label>
                     </div>
                 </div>
 
@@ -119,15 +128,13 @@
                 <!-- Location -->
                 <div class="mt-5 grid gap-2 grid-cols-2 md:gap-6">
                     <div class="relative z-0 w-full mb-5 group">
-                        <input type="text" [(ngModel)]="userProfile.location.city" class="floating-input peer"
-                            disabled />
+                        <input type="text" [(ngModel)]="userProfile.city" class="floating-input peer" disabled />
                         <label for="location.city"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">City</label>
                     </div>
 
                     <div class="relative z-0 w-full mb-5 group">
-                        <input type="text" [(ngModel)]="userProfile.location.state" class="floating-input peer"
-                            disabled />
+                        <input type="text" [(ngModel)]="userProfile.state" class="floating-input peer" disabled />
                         <label for="location.state"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">State</label>
                     </div>

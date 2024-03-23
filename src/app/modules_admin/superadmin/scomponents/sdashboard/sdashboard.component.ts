@@ -9,8 +9,8 @@ import {
   effect,
   signal,
 } from '@angular/core';
-import { AdminProfileModel } from '../../../../model/admin-profile-model';
 import { AuthService } from '../../../../shared/auth.service';
+import { environment } from '../../../../../environments/environment.development';
 
 @Component({
   selector: 'app-sdashboard',
@@ -18,7 +18,8 @@ import { AuthService } from '../../../../shared/auth.service';
   styleUrl: './sdashboard.component.css',
 })
 export class SdashboardComponent {
-  adminProfile: AdminProfileModel | undefined;
+  private baseUrl = environment.BASE_URL;
+  adminProfile: any;
   isMobile: boolean = false;
   isSidebarOpen: boolean = false;
 
@@ -66,21 +67,18 @@ export class SdashboardComponent {
   }
 
   ngOnInit() {
-    // Fetch AdminProfile Model data
-    // Check if there is an existing session with the evadmin accountType
     const sessionUser = this.authService.getAdminSession();
-    if (
-      (sessionUser && sessionUser.accountType === 'superadmin') ||
-      sessionUser?.accountType === 'admin'
-    ) {
+    if (sessionUser) {
       this.authService
-        .getAdminProfileUsingID(sessionUser.adminId)
-        .then((Profile) => {
-          if (Profile) {
-            this.adminProfile = Profile;
+        .getSuperAdminProfileUsingID(sessionUser.adminId)
+        .subscribe(
+          (data) => {
+            this.adminProfile = data.profile;
+          },
+          (error) => {
+            console.error('Error fetching user data:', error);
           }
-        });
-    } else {
+        );
     }
   }
 
@@ -113,5 +111,9 @@ export class SdashboardComponent {
     if (this.isMobile) {
       this.isSidebarOpen = false;
     }
+  }
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/admin/image/${filename}`;
   }
 }

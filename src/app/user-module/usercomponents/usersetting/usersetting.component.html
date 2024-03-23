@@ -34,7 +34,7 @@
                     </div>
 
                     <!-- For Email and Mobile -->
-                    <div class="mt-5 grid md:grid-cols-2 md:gap-6">
+                    <div class="mt-5 grid md:grid-cols-3 md:gap-6">
                         <div>
                             <label class="mb-3 block font-medium text-sm text-black dark:text-white">
                                 Email
@@ -50,6 +50,18 @@
                             <input type="text" [(ngModel)]="userProfile.mobile" name="mobile" id="mobile"
                                 class="w-full shadow-1 rounded-lg border-[1.5px]  bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default">
                         </div>
+
+                        <div>
+                            <label class="mb-3 block font-medium text-sm text-black dark:text-white">
+                                Gender
+                            </label>
+                            <select [(ngModel)]="userProfile.gender" name="gender" id="gender"
+                                class="w-full shadow-1 rounded-lg border-[1.5px] bg-white py-3 px-5 font-medium outline-none transition focus:border-blue-600 active:border-blue-800 disabled:cursor-default">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+
                     </div>
 
                     <!-- For DOB/Date of Joining / userid -->
@@ -126,7 +138,7 @@
                     <div class="flex justify-center">
                         <button
                             class="flex bg-blue-700 justify-center rounded py-2 px-6 font-medium text-white hover:bg-opacity-90"
-                            type="button" (click)="saveUserDetetails()">
+                            type="button" (click)="updateUserProfileDetails()">
                             Save
                         </button>
                     </div>
@@ -149,7 +161,8 @@
                 <form>
                     <div class="mb-4 flex items-center gap-3">
                         <div class="h-14 w-14 rounded-full">
-                            <img [src]="previewImage || userProfile.profilepic" [alt]="userProfile.firstname">
+                            <img [src]="previewImage || getProfileImageUrl(userProfile.profilepic)"
+                                [alt]="userProfile.firstname">
                         </div>
                         <div>
                             <span class="mb-1.5 font-medium text-black dark:text-white">Edit your photo</span>

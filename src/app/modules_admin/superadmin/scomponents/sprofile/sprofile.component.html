@@ -23,7 +23,8 @@
             <div class="flex flex-col gap-5.5 p-6.5">
 
                 <div class="mt-5 flex items-center justify-center">
-                    <img [src]="adminProfile.profilepic" class="rounded-full w-20 h-20 border border-stroke">
+                    <img [src]="getProfileImageUrl(adminProfile.profilepic)"
+                        class="rounded-full w-20 h-20 border border-stroke">
                 </div>
 
                 <!-- For First Name and Last Name  -->

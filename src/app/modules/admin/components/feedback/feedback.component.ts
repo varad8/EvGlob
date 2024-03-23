@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
-import { Ratingmodel } from '../../../../model/ratingmodel';
 import { AuthService } from '../../../../shared/auth.service';
 import { AdminserviceService } from '../../../../EvDataService/adminservice.service';
-import { EvAdminProfile } from '../../../../model/ev-admin-profile';
+import { environment } from '../../../../../environments/environment.development';
 
 @Component({
   selector: 'app-feedback',
@@ -10,13 +9,14 @@ import { EvAdminProfile } from '../../../../model/ev-admin-profile';
   styleUrl: './feedback.component.css',
 })
 export class FeedbackComponent {
-  ratingData: Ratingmodel[] = [];
-  session: EvAdminProfile;
-  filterRatings: Ratingmodel[] = [];
+  private baseUrl = environment.BASE_URL;
+  ratingData: any;
+  session: any;
+  filterRatings: any;
   searchTerm: string = '';
   showModal: boolean = false;
   feedbackMsg: string = '';
-  selectedRating: Ratingmodel;
+  selectedRating: any;
 
   constructor(
     private auth: AuthService,
@@ -24,17 +24,32 @@ export class FeedbackComponent {
   ) {}
 
   ngOnInit() {
-    this.session = this.auth.getSession();
+    this.session = this.auth.getEvAdminSession();
 
-    console.log(this.session.id);
+    this.adminService.getAllRatingByStationId(this.session.userid).subscribe(
+      (response: any) => {
+        if (response.ratings) {
+          this.ratingData = response.ratings;
 
-    this.adminService.getRatingsByStationID(this.session.id).subscribe(
-      (ratings: Ratingmodel[]) => {
-        this.ratingData = ratings;
-        this.filterRatings = ratings;
+          // Fetch user profile data for each rating
+          this.ratingData.forEach((rating: any) => {
+            this.auth.getUserProfileUsingID(rating.userId).subscribe(
+              (data) => {
+                rating.userProfile = data.profile;
+              },
+              (error) => {
+                console.error('Error fetching user profile data:', error);
+              }
+            );
+          });
+
+          this.filterRatings = this.ratingData;
+
+          console.log(this.filterRatings);
+        }
       },
       (error) => {
-        console.error('Error fetching ratings:', error);
+        console.error('Error fetching rating data:', error);
       }
     );
   }
@@ -59,7 +74,7 @@ export class FeedbackComponent {
   filterRating(): void {
     // Filter ratings based on search term
     this.filterRatings = this.ratingData.filter((rating) =>
-      rating.userId.toLowerCase().includes(this.searchTerm.toLowerCase())
+      rating.stationId.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
   }
 
@@ -90,5 +105,10 @@ export class FeedbackComponent {
           ? 'w-12 h-12 text-yellow-500'
           : 'w-12 h-12 text-gray-500';
     });
+  }
+
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/admin/image/${filename}`;
   }
 }

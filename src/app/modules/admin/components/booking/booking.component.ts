@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { Bookingmodel } from '../../../../model/bookingmodel';
-import { UserProfile } from '../../../../model/user-profile';
 import { AdminserviceService } from '../../../../EvDataService/adminservice.service';
-import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../shared/auth.service';
-import { EvAdminProfile } from '../../../../model/ev-admin-profile';
+import { forkJoin } from 'rxjs';
+import { UserservicesService } from '../../../../UserDataService/userservices.service';
+import { environment } from '../../../../../environments/environment.development';
 
 @Component({
   selector: 'app-booking',
@@ -12,44 +11,70 @@ import { EvAdminProfile } from '../../../../model/ev-admin-profile';
   styleUrl: './booking.component.css',
 })
 export class BookingComponent {
-  bookings: Bookingmodel[];
-  userProfiles: UserProfile[] = [];
-  filteredBookings: Bookingmodel[];
+  private baseUrl = environment.BASE_URL;
+  notificationTitle: string;
+  notificationDescription: string;
+  notificationModal: boolean = false;
+  bookings: any;
+  userProfiles: any;
+  filteredBookings: any;
   filterType: string = 'All';
   searchTerm: string = '';
   filterDate: string = '';
-  searchUserId: string = '';
-  session: EvAdminProfile;
+  mobile: string = '';
+  session: any;
+  showModal: boolean = false;
+  selectedBooking: any;
+  feedbackMsg: string = '';
+  selectedratingdata: any;
+  paymentData: any;
+  selectedDataForNotification: any;
+  isPaymentModal: boolean = false;
+  isProfileModal: boolean = false;
+  selectedProfile: any;
 
   constructor(
     private evdata: AdminserviceService,
-    private route: ActivatedRoute,
-    private auth: AuthService
+    private auth: AuthService,
+    private userservice: UserservicesService
   ) {}
 
   ngOnInit(): void {
-    this.session = this.auth.getSession();
-    this.getBookings(this.session.id);
+    this.session = this.auth.getEvAdminSession();
+    console.log('Session Data', this.session);
+    this.getBookings(this.session.userid);
   }
 
-  async getBookings(stationid: string): Promise<void> {
-    this.evdata
-      .getBookingsByStationId(stationid)
-      .subscribe(async (bookings) => {
+  //Get Booking
+  getBookings(userid: string) {
+    this.evdata.getBookingDataByStationId(userid).subscribe(
+      (bookings: any) => {
         this.bookings = bookings;
+        this.userProfiles = []; // Initialize userProfiles array
 
-        for (const booking of this.bookings) {
-          if (booking.userId) {
-            const userProfile = await this.auth.getUserUsingID(booking.userId);
-            if (userProfile) {
-              this.userProfiles.push(userProfile);
-            }
+        const profileObservables = this.bookings
+          .filter((booking: any) => !!booking.userId)
+          .map((booking: any) =>
+            this.auth.getUserProfileUsingID(booking.userId)
+          );
+
+        forkJoin(profileObservables).subscribe(
+          (profiles: any[]) => {
+            this.userProfiles = profiles.map((data) => data.profile);
+            this.filteredBookings = this.bookings;
+            this.filterBookings();
+          },
+          (error) => {
+            console.log('Error fetching user data:', error);
+            // Handle error
           }
-        }
-
-        this.filteredBookings = this.bookings;
-        this.filterBookings();
-      });
+        );
+      },
+      (error) => {
+        console.log('Error fetching booking data:', error);
+        // Handle error
+      }
+    );
   }
 
   filterBookings(): void {
@@ -77,11 +102,11 @@ export class BookingComponent {
       );
     } else if (this.filterType === 'Visited') {
       tempBookings = tempBookings.filter(
-        (booking) => booking.visitingStatus === 'visited'
+        (booking) => booking.visitingStatus === 'Visited'
       );
     } else if (this.filterType === 'NotVisited') {
       tempBookings = tempBookings.filter(
-        (booking) => booking.visitingStatus === 'not visited'
+        (booking) => booking.visitingStatus === 'Not Visited'
       );
     }
 
@@ -95,17 +120,19 @@ export class BookingComponent {
       );
     }
 
+    if (this.mobile.trim() !== '') {
+      tempBookings = tempBookings.filter((booking) =>
+        this.userProfiles.some((userProfile) =>
+          userProfile.mobile.toLowerCase().includes(this.mobile.toLowerCase())
+        )
+      );
+    }
+
     if (this.filterDate) {
       tempBookings = tempBookings.filter(
         (booking) =>
           new Date(booking.bookedForDate).toDateString() ===
           new Date(this.filterDate).toDateString()
-      );
-    }
-
-    if (this.searchUserId.trim() !== '') {
-      tempBookings = tempBookings.filter((booking) =>
-        booking.userId.toLowerCase().includes(this.searchUserId.toLowerCase())
       );
     }
 
@@ -115,11 +142,11 @@ export class BookingComponent {
       const aBookingDate = new Date(a.bookedForDate);
       const bBookingDate = new Date(b.bookedForDate);
 
-      if (a.visitingStatus === 'visited' && b.visitingStatus !== 'visited') {
+      if (a.visitingStatus === 'Visited' && b.visitingStatus !== 'Visited') {
         return 1; // Move 'visited' records to the end
       } else if (
-        a.visitingStatus !== 'visited' &&
-        b.visitingStatus === 'visited'
+        a.visitingStatus !== 'Visited' &&
+        b.visitingStatus === 'Visited'
       ) {
         return -1; // Keep 'not visited' records before 'visited' records
       } else if (aBookingDate < currentDate && bBookingDate < currentDate) {
@@ -171,44 +198,138 @@ export class BookingComponent {
     return bookingDate.getTime() > currentDate.getTime();
   }
 
-  //update booking status by using that id
-  updateStatusToVisited(bookingData: Bookingmodel): void {
-    // Construct the message with booking information
-    const confirmationMessage = `Are you sure you want to update the booking status to "visited" for the following booking?\n\nUser Id: ${
-      bookingData.userId
-    }\nStation Id: ${bookingData.stationId}\nBooked For: ${
-      bookingData.bookedForDate
-    }\nTime: ${bookingData.timeForBooked}\nHours of Booking: ${
-      bookingData.totalHoursEvBooking
-    } hrs.\nExpected End Time: ${this.calculateExpectedEndTime(
-      bookingData.timeForBooked,
-      bookingData.totalHoursEvBooking
-    )}\nStatus: ${bookingData.visitingStatus}\nBooking Slot: ${
-      bookingData.bookingSlot
-    }\nTotal Payable: ₹${bookingData.totalPayable}\nRemark: ${
-      bookingData.remark
-    }`;
+  // Function to toggle the modal visibility
+  toggleModal(dataofbooking: any) {
+    this.selectedBooking = dataofbooking;
+    this.showModal = !this.showModal;
+  }
 
-    // Ask for confirmation before updating the status
-    const confirmUpdate = confirm(confirmationMessage);
+  toggleClose() {
+    this.showModal = false;
+    this.feedbackMsg = '';
+    this.selectedBooking = undefined;
+    this.showModal = false;
+  }
 
-    if (confirmUpdate) {
-      const newStatus = 'visited';
-      const newTimestamp = Date.now();
+  openPaymentModal() {
+    this.isPaymentModal = true;
+  }
+  closeModal() {
+    this.paymentData = null;
+    this.isPaymentModal = false;
+  }
 
-      this.evdata
-        .updateStatusOfVisit(bookingData.bookingRefId, newStatus, newTimestamp)
-        .then(() => {
-          console.log('Booking status updated to visited successfully');
-          alert('Booking status updated to visited successfully');
-        })
-        .catch((error) => {
-          console.error('Error updating booking status:', error);
-          alert('Error updating booking status:' + error);
-        });
-    } else {
-      console.log('Update cancelled by user');
-      alert('Update cancelled by user');
-    }
+  //View Payment Details
+  paymentDetails(orderid: string) {
+    this.userservice.getPaymentDataByOrderId(orderid).subscribe(
+      (response: any) => {
+        this.paymentData = response.payments[0];
+        console.log(response.payments[0]);
+        this.openPaymentModal();
+      },
+      (error) => {
+        console.log('Error fetching booking data:', error);
+        // Handle error
+      }
+    );
+  }
+
+  //Download Invoice
+  downloadInvoice(orderid: string, useremail: string) {
+    this.userservice.sendInvoiceToUser(orderid, useremail);
+  }
+
+  //Format amount
+  formatCurrency(value: number): string {
+    // Divide by 100 to get the rupees
+    const rupees = value / 100;
+
+    // Convert rupees to a string with two decimal places
+    const formattedValue = rupees.toFixed(2);
+
+    // Return the formatted value
+    return formattedValue;
+  }
+
+  //Update to Visiting status
+  updateStatusToVisited(bookingData: any) {
+    this.evdata
+      .updateBookingStatusByOrderId(bookingData.bookingRefId)
+      .subscribe(
+        (response) => {
+          alert(response.message);
+        },
+        (error) => {
+          alert(error.error.error);
+        }
+      );
+  }
+
+  //openNotification Modal
+  openNotificationModa() {
+    this.notificationModal = true;
+  }
+  closeNotificationModal() {
+    this.notificationModal = false;
+  }
+  sendNotification(bookingData: any, profileData: any) {
+    this.openNotificationModa();
+    this.selectedDataForNotification = bookingData;
+    this.selectedDataForNotification.profile = profileData;
+
+    console.log(this.selectedDataForNotification);
+  }
+
+  saveNotification() {
+    console.log(this.notificationDescription, this.notificationTitle);
+    this.evdata
+      .sendNotificationToUser(
+        this.selectedDataForNotification.userId,
+        this.selectedDataForNotification.stationId,
+        this.notificationTitle,
+        this.notificationDescription
+      )
+      .subscribe(
+        (response) => {
+          this.closeNotificationModal();
+          this.notificationDescription = '';
+          this.notificationTitle = '';
+          alert(response.message);
+        },
+        (error) => {
+          alert(error.error.error);
+        }
+      );
+  }
+
+  viewUserProfile(userProfile: any) {
+    this.selectedProfile = userProfile;
+    this.isProfileModal = true;
+  }
+
+  closeProfileModal() {
+    this.isProfileModal = false;
+  }
+
+  //Get Image
+  getProfileImageUrl(filename: string): string {
+    return `${this.baseUrl}/admin/image/${filename}`;
+  }
+
+  convertTimestampToReadable(timestamp: string): string {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-US', { timeZone: 'UTC' });
+  }
+
+  formatDate(dateString: string): string {
+    // Parse the ISO 8601 date string into a Date object
+    const date = new Date(dateString);
+    // Extract year, month, and day from the Date object
+    const year = date.getFullYear();
+    // Months are zero-based in JavaScript Date objects, so add 1 to get the correct month
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    // Construct the formatted date string in yyyy-mm-dd format
+    return `${year}-${month}-${day}`;
   }
 }

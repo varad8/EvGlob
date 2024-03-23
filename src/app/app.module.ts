@@ -17,7 +17,6 @@ import { FooterComponent } from './components/footer/footer.component';
 import { EvadminloginComponent } from './components/evadminlogin/evadminlogin.component';
 import { EvadminregisterComponent } from './components/evadminregister/evadminregister.component';
 import { AdminloginComponent } from './components/adminlogin/adminlogin.component';
-import { AngularFireModule } from '@angular/fire/compat';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { environment } from '../environments/environment.development';
 import { NgxWebstorageModule } from 'ngx-webstorage';
@@ -26,6 +25,9 @@ import { GoogleMapsModule } from '@angular/google-maps';
 import { ModalComponent } from './components/modal/modal.component';
 import { HttpClientModule } from '@angular/common/http';
 import { BookingmodalComponent } from './components/alertmodal/bookingmodal/bookingmodal.component';
+import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
+import { AboutusComponent } from './components/aboutus/aboutus.component';
+import { ContactusComponent } from './components/contactus/contactus.component';
 
 @NgModule({
   declarations: [
@@ -47,16 +49,18 @@ import { BookingmodalComponent } from './components/alertmodal/bookingmodal/book
     EvdetailspageComponent,
     ModalComponent,
     BookingmodalComponent,
+    AboutusComponent,
+    ContactusComponent,
   ],
   imports: [
     NgxWebstorageModule.forRoot(),
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    AngularFireModule.initializeApp(environment.firebase),
     GoogleMapsModule,
     HttpClientModule,
     ReactiveFormsModule,
+    CanvasJSAngularChartsModule,
   ],
 
   providers: [],

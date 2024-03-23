@@ -22,21 +22,42 @@
     </div>
     <!-- Second grid section -->
     <div class="h-screen  overflow-y-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4 mt-2 mb-3">
+        <div class="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-3 gap-4 mt-2 mb-3">
             <ng-container *ngFor="let rating of filterRatings; let i = index">
                 <div class="bg-white dark:bg-slate-800 shadow-lg rounded-lg  w-full border border-gray-400">
                     <div class="px-4 py-2">
-                        <h3 class="text-lg font-semibold dark:text-gray-200 text-gray-700">{{ rating.stationId }}</h3>
+                        <h3 class="text-lg font-semibold dark:text-gray-200 text-gray-700">{{ rating.userId }}
+                        </h3>
                         <hr />
 
                         <!-- Rating Details -->
                         <h5 class="text-lg text-gray-500 dark:text-gray-400">Rating Details</h5>
                         <!-- Display rating data -->
                         <div class="flex gap-5 justify-between mt-2 mb-2">
-                            <p class="text-gray-500 text-sm">User Id: {{ rating.userId }}</p>
+
                             <p class="text-gray-500 text-sm">Station Id: {{ rating.stationId }}</p>
                             <p class="text-gray-500 text-sm">Ratings out of 5: {{ rating.rating }}</p>
-                            <p class="text-gray-500 text-sm">Feedback : {{ rating.feedbackMsg }}</p>
+
+                        </div>
+                        <p class="text-gray-500 text-sm">Feedback : {{ rating.feedbackMsg }}</p>
+
+                        <hr />
+                        <h5 class="text-lg text-gray-500 dark:text-gray-400">Profie Details</h5>
+                        <div class="flex gap-6  mt-2 mb-2">
+                            <img class="w-20 h-20 rounded-full border border-gray-100"
+                                [src]="getProfileImageUrl(rating.userProfile.profilepic)" />
+                            <div>
+                                <p class="text-gray-500 text-sm">User Name: {{rating.userProfile.firstname}}
+                                    {{rating.userProfile.lastname}}
+                                </p>
+                                <p class="text-gray-500 text-sm">Email:
+                                    {{rating.userProfile.email}}
+                                </p>
+                                <p class="text-gray-500 text-sm">Mobile No:
+                                    {{rating.userProfile.mobile}}
+                                </p>
+                                <p class="text-gray-500 text-sm">User Id: {{ rating.userId }}</p>
+                            </div>
                         </div>
 
                     </div>
@@ -45,15 +66,9 @@
             </ng-container>
         </div>
 
-        <div class="flex justify-center items-center">
-            <svg *ngIf="!filterRatings" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                style="margin:auto;display:block;" width="100px" height="100px" viewBox="0 0 100 100"
-                preserveAspectRatio="xMidYMid">
-                <path d="M10 50A40 40 0 0 0 90 50A40 42 0 0 1 10 50" fill="#36e30c" stroke="none">
-                    <animateTransform attributeName="transform" type="rotate" dur="1s" repeatCount="indefinite"
-                        keyTimes="0;1" values="0 50 51;360 50 51"></animateTransform>
-                </path>
-            </svg>
+        <div *ngIf="!filterRatings || filterRatings.length === 0"
+            class="flex justify-center items-center overflow-hidden">
+            <p class="text-gray-500">No ratings found.</p>
         </div>
 
     </div>

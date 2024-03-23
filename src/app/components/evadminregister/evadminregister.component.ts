@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../shared/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-evadminregister',
@@ -9,26 +10,25 @@ import { AuthService } from '../../shared/auth.service';
 export class EvadminregisterComponent {
   email: string = '';
   password: string = '';
+  cpassword: string = '';
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
   evregister() {
-    if (this.email == '') {
-      alert('Please enter email');
-      return;
-    }
-    if (this.password == '') {
-      alert('Please enter password');
-      return;
-    }
-    if (this.password.length < 6) {
-      alert('Password at least six character long');
-      return;
-    }
-
-    //evlogin method call
-    this.auth.evadminregister(this.email, this.password);
-    this.email = '';
-    this.password = '';
+    this.auth
+      .registerEvAdmin(this.email, this.password, this.cpassword)
+      .subscribe(
+        (response) => {
+          console.log('Registration successful', response);
+          alert(response.message);
+          // Navigate to the login page
+          this.router.navigate(['login/evadmin']);
+        },
+        (error) => {
+          console.error('Registration failed', error.error);
+          alert(error.error.error);
+          // Handle error, e.g., display an error message
+        }
+      );
   }
 }

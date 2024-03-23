@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { UserProfile } from '../../model/user-profile';
 import { AuthService } from '../../shared/auth.service';
 @Component({
   selector: 'app-navbar',
@@ -17,7 +16,8 @@ import { AuthService } from '../../shared/auth.service';
 })
 export class NavbarComponent {
   darkMode = signal<boolean>(false);
-  session: UserProfile;
+  session: any;
+  isOpenMenu: boolean = false;
 
   @HostBinding('class.dark') get mode() {
     return this.darkMode();
@@ -81,5 +81,13 @@ export class NavbarComponent {
   ngOnInit(): void {
     // Check for an existing session when the component is initialized
     this.session = this.auth.getWebUserSession();
+  }
+
+  toggleMenuOption() {
+    if (this.isOpenMenu) {
+      this.isOpenMenu = false;
+    } else {
+      this.isOpenMenu = true;
+    }
   }
 }

@@ -12,6 +12,7 @@ import { PaymentsComponent } from './components/payments/payments.component';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { FeedbackComponent } from './components/feedback/feedback.component';
+import { NotificationsComponent } from './components/notifications/notifications.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { FeedbackComponent } from './components/feedback/feedback.component';
     BookingComponent,
     PaymentsComponent,
     FeedbackComponent,
+    NotificationsComponent,
   ],
   imports: [CommonModule, AdminRoutingModule, FormsModule, HttpClientModule],
 })
